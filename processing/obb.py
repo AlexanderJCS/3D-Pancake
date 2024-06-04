@@ -109,6 +109,7 @@ def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool 
     :param data: The 3D numpy boolean array
     :param xy_scale: The distance of a voxel in the x or y direction
     :param z_scale: The distance of a voxel in the z direction
+    :param visualize: Whether to visualize the OBBs. Will open a new window
     :return: An Obb object
     """
 
