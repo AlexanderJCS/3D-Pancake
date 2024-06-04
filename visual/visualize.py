@@ -1,14 +1,25 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 class Interactive3DVisualizer:
-    def __init__(self, distance_map):
+    def __init__(self, distance_map, cmap="gray", clamp_negative=True):
         self.distance_map = distance_map
+        if clamp_negative:
+            self.distance_map[self.distance_map < 0] = 0  # clamp negative values to 0
+
         self.current_slice = 0
 
         self.fig, self.ax = plt.subplots()
-        self.im = self.ax.imshow(self.distance_map[self.current_slice], cmap="jet")
+
+        self.im = self.ax.imshow(
+            self.distance_map[self.current_slice],
+            cmap=cmap,
+            vmin=distance_map.min(),
+            vmax=distance_map.max()
+        )
+
+        self.fig.colorbar(self.im)
+
         self._update()
 
     def _on_scroll(self, event):

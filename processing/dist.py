@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import ndimage
 
+import visual
 
 def gen_dist_map(data: np.ndarray, xy_scale: float, z_scale: float) -> np.ndarray:
     # add padding around data to prevent edges not counting as 0
@@ -18,4 +19,4 @@ def gen_dist_map(data: np.ndarray, xy_scale: float, z_scale: float) -> np.ndarra
     dist_map_positives = dist_map_positives[1:-1, 1:-1, 1:-1]
     dist_map_negatives = dist_map_negatives[1:-1, 1:-1, 1:-1]
 
-    return dist_map_positives + dist_map_negatives
+    return dist_map_positives - dist_map_negatives
