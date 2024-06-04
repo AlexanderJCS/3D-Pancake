@@ -22,12 +22,18 @@ class Interactive3DVisualizer:
 
         self._update()
 
-    def _on_scroll(self, event):
-        if event.button == "down":
+    def _handle_event(self, up: bool):
+        if up:
             self.current_slice = (self.current_slice + 1) % self.distance_map.shape[0]
-        elif event.button == "up":
+        else:
             self.current_slice = (self.current_slice - 1) % self.distance_map.shape[0]
         self._update()
+
+    def _on_scroll(self, event):
+        self._handle_event(event.step < 0)
+
+    def _on_key(self, event):
+        self._handle_event(event.key == "right" or event.key == "up")
 
     def _update(self):
         self.im.set_data(self.distance_map[self.current_slice])
