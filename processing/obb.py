@@ -76,7 +76,7 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
     :return: A point cloud of the True values in the array
     """
 
-    points = np.argwhere(data)
+    points = np.argwhere(data).astype(float)
     points *= xy_scale
 
     # convert each point into 4 points representing the corners of the voxel
@@ -86,11 +86,11 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
 
     # add a z layer for each point: the z layer of the voxel and the z layer of the voxel + z_scale
     points = np.array([
-        [point[0], point[1], z_layer] for point in points
+        [point[0], point[1], z_layer * z_scale] for point in points
     ])
 
     points_2 = np.array([
-        [point[0], point[1], z_layer + z_scale] for point in points
+        [point[0], point[1], (z_layer + 1) * z_scale] for point in points
     ])
 
     points = np.concatenate((points, points_2), axis=0)

@@ -20,7 +20,7 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float) -> float:
     formatted = data.format_data(raw_data)
 
     # Step B: oriented bounding boxes
-    bounding_box: list[obb.Obb] = obb.get_obbs(formatted, xy_len, z_len)
+    bounding_box: list[obb.Obb] = obb.get_obbs(formatted, xy_len, z_len, visualize=True)
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, xy_len, z_len)
