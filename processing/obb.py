@@ -101,7 +101,7 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
     return pcd
 
 
-def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool = True) -> list[Obb]:
+def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool = False) -> list[Obb]:
     """
     Finds the oriented bounding boxes of the data
 
