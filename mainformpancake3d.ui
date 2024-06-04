@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>100</height>
+    <height>150</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,70 @@
   <property name="minimumSize">
    <size>
     <width>300</width>
-    <height>100</height>
+    <height>150</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>3D Pancake</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QCheckBox" name="chk_visualize">
+     <property name="text">
+      <string>Visualize Steps</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLineEdit" name="line_edit_c_s">
+       <property name="text">
+        <string>0.67</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>c_s (higher = more blur)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>XY Scale (nm):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="line_edit_xy_scale">
+       <property name="text">
+        <string>5.03</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Z Scale (nm):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="line_edit_z_scale">
+       <property name="text">
+        <string>42.017</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item>
     <widget class="QPushButton" name="btn_process">
      <property name="text">

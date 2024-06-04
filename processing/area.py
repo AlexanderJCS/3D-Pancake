@@ -6,13 +6,15 @@ from . import dist
 import visual
 
 
-def get_area(raw_data: np.ndarray, xy_len: float, z_len: float) -> float:
+def get_area(raw_data: np.ndarray, xy_len: float, z_len: float, visualize: bool = False, c_s: float = 0.67) -> float:
     """
     Processes the data
     
     :param raw_data: The raw data to find the surface area of
     :param xy_len: The length of a voxel in the x or y direction
     :param z_len: The length of a voxel in the z direction
+    :param visualize: Whether to visualize the data
+    :param c_s: The constant for the sigma formula
     :return: Finds the surface area given the raw data
     """
     
@@ -20,14 +22,15 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float) -> float:
     formatted = data.format_data(raw_data)
 
     # Step B: oriented bounding boxes
-    bounding_box: list[obb.Obb] = obb.get_obbs(formatted, xy_len, z_len, visualize=True)
+    bounding_box: list[obb.Obb] = obb.get_obbs(formatted, xy_len, z_len, visualize=visualize)
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, xy_len, z_len)
-    blurred = dist.blur(distance_map, 0.67, xy_len, z_len)
+    blurred = dist.blur(distance_map, c_s, xy_len, z_len)
 
-    visualizer = visual.Interactive3DVisualizer(distance_map)
-    visualizer.visualize()
+    if visualize:
+        visualizer = visual.Interactive3DVisualizer(distance_map)
+        visualizer.visualize()
 
     return 0
     

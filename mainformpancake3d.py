@@ -1,6 +1,7 @@
 from ORSModel import orsObj, ROI
 from ORSServiceClass.ORSWidget.chooseObjectAndNewName.chooseObjectAndNewName import ChooseObjectAndNewName
 from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6 import QtGui
 
 from OrsLibraries.workingcontext import WorkingContext
 from ORSServiceClass.windowclasses.orsabstractwindow import OrsAbstractWindow
@@ -20,6 +21,12 @@ class MainFormPancake3D(OrsAbstractWindow):
         super().__init__(implementation, parent)
         self.ui = Ui_MainFormPancake3D()
         self.ui.setupUi(self)
+
+        self.ui.line_edit_c_s.setValidator(QtGui.QDoubleValidator(0, 100, 6))
+        self.ui.line_edit_xy_scale.setValidator(QtGui.QDoubleValidator(0, 10000, 6))
+        self.ui.line_edit_z_scale.setValidator(QtGui.QDoubleValidator(0, 10000, 6))
+
+
         WorkingContext.registerOrsWidget(
             "Pancake3D_eae430b521c411efa291f83441a96bd5",
             implementation,
@@ -67,13 +74,14 @@ class MainFormPancake3D(OrsAbstractWindow):
         max_indices = roi.getLocalBoundingBoxMax(0)
         max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-        print(min_indices)
-        print(max_indices)
-
         data = roi.getNDArray()
         data = data[min_indices[0]:max_indices[0], min_indices[1]:max_indices[1], min_indices[2]:max_indices[2]]
 
-        print(data.shape)
-
         # Data processing
-        area.get_area(data, 5.03, 42.017)
+        area.get_area(
+            data,
+            xy_len=float(self.ui.line_edit_xy_scale.text()),
+            z_len=float(self.ui.line_edit_z_scale.text()),
+            visualize=self.ui.chk_visualize.isChecked(),
+            c_s=float(self.ui.line_edit_c_s.text())
+        )
