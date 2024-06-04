@@ -35,6 +35,11 @@ class Interactive3DVisualizer:
     def _on_key(self, event):
         self._handle_event(event.key == "right" or event.key == "up")
 
+    def _on_click(self, event):
+        # Get the clicked location and print the value at that location
+        x, y = int(event.xdata), int(event.ydata)
+        print(self.distance_map[self.current_slice, y, x])
+
     def _update(self):
         self.im.set_data(self.distance_map[self.current_slice])
         self.ax.set_title(f"Slice {self.current_slice+1}")
@@ -42,4 +47,7 @@ class Interactive3DVisualizer:
 
     def visualize(self):
         self.fig.canvas.mpl_connect("scroll_event", self._on_scroll)
+        self.fig.canvas.mpl_connect("key_press_event", self._on_key)
+        self.fig.canvas.mpl_connect("button_press_event", self._on_click)
+
         plt.show(block=True)  # if plt.show is not blocking, it will cause the window to not respond
