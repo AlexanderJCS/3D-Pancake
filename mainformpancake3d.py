@@ -1,9 +1,3 @@
-import time
-
-import numpy as np
-
-from typing import Optional
-
 from ORSModel import orsObj, ROI
 from ORSServiceClass.ORSWidget.chooseObjectAndNewName.chooseObjectAndNewName import ChooseObjectAndNewName
 from PyQt6.QtCore import pyqtSlot, Qt
@@ -13,6 +7,11 @@ from ORSServiceClass.windowclasses.orsabstractwindow import OrsAbstractWindow
 from PyQt6.QtWidgets import QDialog
 
 from .ui_mainformpancake3d import Ui_MainFormPancake3D
+
+from typing import Optional
+
+from processing import area
+import numpy as np
 
 
 class MainFormPancake3D(OrsAbstractWindow):
@@ -58,12 +57,11 @@ class MainFormPancake3D(OrsAbstractWindow):
 
     @pyqtSlot()
     def on_btn_process_clicked(self):
-        roi = self.roi_dialog()
+        roi: ROI = self.roi_dialog()
 
         if roi is None:
             return
 
-        start = time.time()
         min_indices = roi.getLocalBoundingBoxMin(0)
         min_indices = np.array([min_indices.getX(), min_indices.getY(), min_indices.getZ()], dtype=int)[::-1]
         max_indices = roi.getLocalBoundingBoxMax(0)
@@ -74,9 +72,8 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         data = roi.getNDArray()
         data = data[min_indices[0]:max_indices[0], min_indices[1]:max_indices[1], min_indices[2]:max_indices[2]]
-        print(time.time() - start)
 
         print(data.shape)
 
-        with open("C:/Users/castronovoa/AppData/Local/ORS/Dragonfly2024.1/pythonUserExtensions/Plugins/roi.pickle", "wb") as f:
-            np.save(f, data)
+        # Data processing
+        area.get_area(data, 1, 1)
