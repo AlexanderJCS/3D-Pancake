@@ -1,5 +1,6 @@
 import open3d as o3d
 import numpy as np
+import time
 
 
 class Obb:
@@ -101,7 +102,7 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
     return pcd
 
 
-def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float) -> Obb:
+def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool = False) -> list[Obb]:
     """
     Finds the oriented bounding boxes of the data
 
@@ -112,7 +113,7 @@ def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float) -> Obb:
     """
 
     pcds = []
-    obbs = []
+    o3d_obbs = []
 
     for layer_num, z_layer in enumerate(data):
         z_layer: np.ndarray  # add this type hinting so pycharm doesn't complain about nothing
@@ -123,11 +124,16 @@ def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float) -> Obb:
             pcd = gen_point_cloud(blob, xy_scale, layer_num, z_scale)
             obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
 
-            obb.color = np.array([1, 0, 0])
+            obb.color = np.array([1, 0, 0])  # make obb red instead of white for better visualization
 
             pcds.append(pcd)
-            obbs.append(obb)
+            o3d_obbs.append(obb)
 
-    o3d.visualization.draw_geometries([*pcds, *obbs])
+    if visualize:
+        o3d.visualization.draw_geometries([*pcds, *o3d_obbs])
 
-    return None
+    obbs: list[Obb] = []
+    for obb in o3d_obbs:
+        obbs.append(Obb(obb))
+
+    return obbs
