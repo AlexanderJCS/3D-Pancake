@@ -7,60 +7,98 @@ class Obb:
         pass
 
 
-def get_xyz(data: np.ndarray, xy_scale: float, z_scale: float) -> np.ndarray:
+def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:
     """
-    Converts a 3D numpy boolean array into an array of 3D coordinates
+    Flood fills a blob onto a new image. Used for finding blobs.
 
-    :param data: The 3D numpy boolean array
-    :param xy_scale: The distance of a voxel in the x or y direction
-    :param z_scale: The distance of a voxel in the z direction
-    :return: An array of 3D coordinates of the True values in the array
+    :param z_layer: The 2D numpy boolean array. This will be modified
+    :param x: The x coordinate of the starting pixel
+    :param y: The y coordinate of the starting pixel
+    :return: The blob image with the blob filled in
     """
 
-    # Get the indices of the True values in the array
-    points = np.argwhere(data)
+    blob = np.zeros(z_layer.shape, dtype=bool)
 
-    points[:, :2] *= xy_scale  # Scale the x and y coordinates
-    points[:, 2] *= z_scale  # Scale the z coordinates
+    stack = [(x, y)]
 
-    return points
+    while stack:
+        x, y = stack.pop()
+
+        if x < 0 or y < 0 or x >= z_layer.shape[1] or y >= z_layer.shape[0]:
+            continue
+
+        if z_layer[y, x]:
+            z_layer[y, x] = False
+            blob[y, x] = True
+
+            stack.append((x + 1, y))
+            stack.append((x - 1, y))
+            stack.append((x, y + 1))
+            stack.append((x, y - 1))
+
+    return blob
 
 
-def gen_point_cloud(data: np.ndarray, xy_scale: float, z_scale: float) -> o3d.geometry.PointCloud:
+def get_blobs(z_layer: np.ndarray) -> np.ndarray:
+    """
+    Finds all blobs (groups of adjacent white pixels) in the image and returns an array of images, each containing one
+    blob.
+
+    :param z_layer: The 2D numpy boolean array
+    :return: The blobs
+    """
+
+    z_layer = z_layer.copy()
+
+    blobs = []
+
+    # Iterate through each pixel. If the pixel is white, flood fill it onto a new image as a separate blob. When flood
+    # filling, make sure to update the original z_layer variable to black so that the blob is not counted again.
+    for y, row in enumerate(z_layer):
+        for x, col in enumerate(row):
+            if not col:
+                continue
+
+            # Flood fill the blob
+            blobs.append(flood_fill(z_layer, x, y))
+
+    return np.array(blobs)
+
+
+def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: float) -> o3d.geometry.PointCloud:
     """
     Converts a 3D numpy boolean array into a point cloud. Used for finding the OBB.
 
-    TODO: when individual layers will be passed, instead of putting the center of the voxel, put the four corners
-
-    :param data: The 3D numpy boolean array
+    :param data: The 2D numpy boolean array for the given layer
     :param xy_scale: The distance of a voxel in the x or y direction
+    :param z_layer: The z layer to convert
     :param z_scale: The distance of a voxel in the z direction
     :return: A point cloud of the True values in the array
     """
 
-    points = get_xyz(data, xy_scale, z_scale)
+    points = np.argwhere(data)
+    points *= xy_scale
+
+    # convert each point into 4 points representing the corners of the voxel
+    points = np.array([
+        [point[0], point[1], z_layer] for point in points
+    ])
+
+    # add a z layer for each point: the z layer of the voxel and the z layer of the voxel + z_scale
+    points = np.array([
+        [point[0], point[1], z_layer] for point in points
+    ])
+
+    points_2 = np.array([
+        [point[0], point[1], z_layer + z_scale] for point in points
+    ])
+
+    points = np.concatenate((points, points_2), axis=0)
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
 
     return pcd
-
-
-def gen_voxels(data: np.ndarray, xy_scale: float, z_scale: float) -> o3d.geometry.VoxelGrid:
-    """
-    Converts a 3D numpy boolean array into a voxel grid. Used for finding the OBB.
-
-    :param data: The 3D numpy boolean array
-    :param xy_scale: The distance of a voxel in the x or y direction
-    :param z_scale: The distance of a voxel in the z direction
-    :return: A voxel grid of the True values in the array
-    """
-
-    pcd = gen_point_cloud(data, xy_scale, z_scale)
-
-    voxel_grid = o3d.geometry.VoxelGrid().create_from_point_cloud(pcd, voxel_size=xy_scale)
-
-    return voxel_grid
 
 
 def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float) -> Obb:
@@ -73,11 +111,23 @@ def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float) -> Obb:
     :return: An Obb object
     """
 
-    pcd = gen_point_cloud(data, xy_scale, z_scale)
-    obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
+    pcds = []
+    obbs = []
 
-    obb.color = np.array([1, 0, 0])  # red
+    for layer_num, z_layer in enumerate(data):
+        z_layer: np.ndarray  # add this type hinting so pycharm doesn't complain about nothing
 
-    o3d.visualization.draw_geometries([pcd, obb])
+        blobs = get_blobs(z_layer)
 
-    return Obb(obb)
+        for blob in blobs:
+            pcd = gen_point_cloud(blob, xy_scale, layer_num, z_scale)
+            obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
+
+            obb.color = np.array([1, 0, 0])
+
+            pcds.append(pcd)
+            obbs.append(obb)
+
+    o3d.visualization.draw_geometries([*pcds, *obbs])
+
+    return None
