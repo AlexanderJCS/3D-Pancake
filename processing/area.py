@@ -24,8 +24,9 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float) -> float:
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, xy_len, z_len)
+    blurred = dist.blur(distance_map, 0.67, xy_len, z_len)
 
-    visualizer = visual.Interactive3DVisualizer(distance_map)
+    visualizer = visual.Interactive3DVisualizer(blurred)
     visualizer.visualize()
 
     return 0
