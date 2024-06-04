@@ -1,11 +1,10 @@
 import open3d as o3d
 import numpy as np
-import time
 
 
 class Obb:
-    def __init__(self, data: np.array):
-        pass
+    def __init__(self, o3d_obb: o3d.geometry.OrientedBoundingBox):
+        self.o3d_obb: o3d.geometry.OrientedBoundingBox = o3d_obb
 
 
 def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:
