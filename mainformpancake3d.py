@@ -76,4 +76,4 @@ class MainFormPancake3D(OrsAbstractWindow):
         print(data.shape)
 
         # Data processing
-        area.get_area(data, 1, 1)
+        area.get_area(data, 5.03, 42.017)
