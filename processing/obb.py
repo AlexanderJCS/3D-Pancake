@@ -1,6 +1,8 @@
 import open3d as o3d
 import numpy as np
 
+from . import data
+
 
 class Obb:
     def __init__(self, o3d_obb: o3d.geometry.OrientedBoundingBox):
@@ -65,19 +67,18 @@ def get_blobs(z_layer: np.ndarray) -> np.ndarray:
     return np.array(blobs)
 
 
-def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: float) -> o3d.geometry.PointCloud:
+def gen_point_cloud(data: np.ndarray, z_layer: float, scale: data.Scale) -> o3d.geometry.PointCloud:
     """
     Converts a 3D numpy boolean array into a point cloud. Used for finding the OBB.
 
     :param data: The 2D numpy boolean array for the given layer
-    :param xy_scale: The distance of a voxel in the x or y direction
+    :param scale: The scale of a voxel
     :param z_layer: The z layer to convert
-    :param z_scale: The distance of a voxel in the z direction
     :return: A point cloud of the True values in the array
     """
 
     points = np.argwhere(data).astype(float)
-    points *= xy_scale
+    points *= scale.xy
 
     # convert each point into 4 points representing the corners of the voxel
     points = np.array([
@@ -86,11 +87,11 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
 
     # add a z layer for each point: the z layer of the voxel and the z layer of the voxel + z_scale
     points = np.array([
-        [point[0], point[1], z_layer * z_scale] for point in points
+        [point[0], point[1], z_layer * scale.z] for point in points
     ])
 
     points_2 = np.array([
-        [point[0], point[1], (z_layer + 1) * z_scale] for point in points
+        [point[0], point[1], (z_layer + 1) * scale.z] for point in points
     ])
 
     points = np.concatenate((points, points_2), axis=0)
@@ -101,13 +102,12 @@ def gen_point_cloud(data: np.ndarray, xy_scale: float, z_layer: float, z_scale: 
     return pcd
 
 
-def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool = False) -> list[Obb]:
+def get_obbs(data: np.ndarray, scale: data.Scale, visualize: bool = False) -> list[Obb]:
     """
     Finds the oriented bounding boxes of the data
 
     :param data: The 3D numpy boolean array
-    :param xy_scale: The distance of a voxel in the x or y direction
-    :param z_scale: The distance of a voxel in the z direction
+    :param scale: The scale of a voxel
     :param visualize: Whether to visualize the OBBs. Will open a new window
     :return: An Obb object
     """
@@ -121,7 +121,7 @@ def get_obbs(data: np.ndarray, xy_scale: float, z_scale: float, visualize: bool 
         blobs = get_blobs(z_layer)
 
         for blob in blobs:
-            pcd = gen_point_cloud(blob, xy_scale, layer_num, z_scale)
+            pcd = gen_point_cloud(blob, layer_num, scale)
             obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
 
             obb.color = np.array([1, 0, 0])  # make obb red instead of white for better visualization
