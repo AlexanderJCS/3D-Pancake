@@ -44,7 +44,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visual.o3d_point_cloud(distance_map, scale, center=center_point)
 
     # Step E: create the mesh
-    psd_mesh = mesh.Mesh(main_obb, center_point)
+    psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
     visual.o3d_point_cloud(distance_map, scale, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
