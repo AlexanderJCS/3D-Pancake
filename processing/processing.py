@@ -54,6 +54,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(distance_map, scale)
+    # todo: use open3d line sets to visualize the gradient
 
     return 0
     
