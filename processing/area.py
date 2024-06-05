@@ -29,7 +29,7 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float, visualize: bool 
     blurred = dist.blur(distance_map, c_s, xy_len, z_len)
 
     if visualize:
-        visualizer = visual.Interactive3DVisualizer(distance_map)
+        visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
     return 0
