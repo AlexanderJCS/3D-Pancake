@@ -47,11 +47,28 @@ class Mesh:
         coords = np.array([[x, y, z] for x in x_coords for y in y_coords for z in z_coords])
         print(coords)
 
-        # plot
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(*coords.T)
-        ax.scatter(*geom_center_rotated)
-        ax.scatter(*vertices.T)
+        # since the x coordinate would be increasing each time (unless x = 0, then we do y)
+        # then we can find how many times it would loop over
+        loop = len(x_coords) if min_extent_index != 0 else len(y_coords)
 
-        plt.show()
+        # this is the one after loop, so if loop is x, then this is y, if loop is y, this is z
+        loop_next = len(y_coords) if min_extent_index != 0 else len(z_coords)
+
+        # calculate the mesh indices
+        indices = []
+        for i in range(loop - 1):
+            for j in range(loop_next - 1):
+                indices.append([i * loop_next + j, i * loop_next + j + 1, (i + 1) * loop_next + j])
+                indices.append([i * loop_next + j + 1, (i + 1) * loop_next + j + 1, (i + 1) * loop_next + j])
+
+        # rotate mesh vertices back
+        coords -= center
+        coords = coords @ rotation_matrix.T
+        coords += center
+
+        # create mesh
+        mesh = o3d.geometry.TriangleMesh()
+        mesh.vertices = o3d.utility.Vector3dVector(coords)
+        mesh.triangles = o3d.utility.Vector3iVector(indices)
+
+        return mesh
