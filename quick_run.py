@@ -13,7 +13,7 @@ def run():
     with open("roi.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=False))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=True))
 
 
 if __name__ == "__main__":
