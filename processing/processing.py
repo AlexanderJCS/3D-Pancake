@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from . import data
@@ -5,6 +7,7 @@ from . import obb
 from . import dist
 from . import center
 from . import mesh
+from . import vectors
 
 import visual
 
@@ -19,7 +22,8 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     :param c_s: The constant for the sigma formula
     :return: Finds the surface area given the raw data
     """
-    
+
+    start_full = time.time()
     # Step A: load and format data
     formatted = data.format_data(raw_data)
 
@@ -47,6 +51,9 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
     visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+
+    # Step F: calculate gradient
+    gradient = vectors.gen_gradient(distance_map, scale)
 
     return 0
     
