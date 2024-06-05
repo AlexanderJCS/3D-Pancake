@@ -85,4 +85,4 @@ def o3d_point_cloud(
         sphere.translate(center)
         geometries.append(sphere)
 
-    o3d.visualization.draw_geometries(geometries, window_name="3D Visualization", mesh_show_back_face=True)
+    o3d.visualization.draw_geometries(geometries, window_name="3D Visualization", mesh_show_wireframe=True, mesh_show_back_face=True)
