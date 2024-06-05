@@ -55,13 +55,13 @@ class SliceViewer:
         plt.show(block=True)  # if plt.show is not blocking, it will cause the window to not respond
 
 
-def o3d_point_cloud(dist_map: np.ndarray, center: np.ndarray):
+def o3d_point_cloud(dist_map: np.ndarray, center: np.ndarray, scale_xy: float, scale_z: float):
     point_cloud = o3d.geometry.PointCloud(
-        o3d.utility.Vector3dVector(np.argwhere(dist_map > 0))
+        o3d.utility.Vector3dVector(np.argwhere(dist_map > 0) * np.array([scale_z, scale_xy, scale_xy]))
     )
 
     # create a sphere to visualize the center
-    sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape) / 100, resolution=20)
+    sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * np.array([scale_z, scale_xy, scale_xy])) / 75, resolution=20)
     sphere.translate(center)
 
     o3d.visualization.draw_geometries([sphere, point_cloud])
