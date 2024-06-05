@@ -102,20 +102,19 @@ def gen_point_cloud(data: np.ndarray, z_layer: float, scale: data.Scale) -> o3d.
     return pcd
 
 
-def get_obbs(data: np.ndarray, scale: data.Scale, visualize: bool = False) -> list[Obb]:
+def get_obbs(raw_data: np.ndarray, scale: data.Scale) -> tuple[Obb, list[Obb]]:
     """
     Finds the oriented bounding boxes of the data
 
-    :param data: The 3D numpy boolean array
+    :param raw_data: The 3D numpy boolean array
     :param scale: The scale of a voxel
-    :param visualize: Whether to visualize the OBBs. Will open a new window
-    :return: An Obb object
+    :return: (the 'main' obb, an array of obbs for each blob in the data
     """
 
     pcds = []
     o3d_obbs = []
 
-    for layer_num, z_layer in enumerate(data):
+    for layer_num, z_layer in enumerate(raw_data):
         z_layer: np.ndarray  # add this type hinting so pycharm doesn't complain about nothing
 
         blobs = get_blobs(z_layer)
@@ -124,16 +123,20 @@ def get_obbs(data: np.ndarray, scale: data.Scale, visualize: bool = False) -> li
             pcd = gen_point_cloud(blob, layer_num, scale)
             obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
 
-            obb.color = np.array([1, 0, 0])  # make obb red instead of white for better visualization
+            obb.color = np.array([1, 0, 0])  # red
 
             pcds.append(pcd)
             o3d_obbs.append(obb)
 
-    if visualize:
-        o3d.visualization.draw_geometries([*pcds, *o3d_obbs])
+    main_o3d_obb = o3d.geometry.OrientedBoundingBox().create_from_points(
+        o3d.utility.Vector3dVector(np.argwhere(raw_data) * scale.zyx())
+    )
+
+    main_o3d_obb.color = np.array([0, 0, 1])  # blue
+    main_obb = Obb(main_o3d_obb)
 
     obbs: list[Obb] = []
     for obb in o3d_obbs:
         obbs.append(Obb(obb))
 
-    return obbs
+    return main_obb, obbs

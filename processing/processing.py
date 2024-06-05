@@ -23,7 +23,10 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     formatted = data.format_data(raw_data)
 
     # Step B: oriented bounding boxes
-    bounding_box: list[obb.Obb] = obb.get_obbs(formatted, scale, visualize=visualize)
+    main_obb, blob_obbs = obb.get_obbs(formatted, scale)
+
+    if visualize:
+        visual.o3d_point_cloud(raw_data, scale, obbs=[main_obb] + blob_obbs)
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, scale)
@@ -33,10 +36,10 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
-    center_point = center.geom_center(distance_map, xy_len, z_len)
+    center_point = center.geom_center(distance_map, scale)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, center_point, xy_len, z_len)
+        visual.o3d_point_cloud(distance_map, scale, center=center_point)
 
     return 0
     

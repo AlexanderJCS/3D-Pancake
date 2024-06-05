@@ -24,7 +24,7 @@ def gen_dist_map(data: np.ndarray, scale: data.Scale) -> np.ndarray:
     return dist_map_positives - dist_map_negatives
 
 
-def blur(dist_map: np.ndarray, c_s: float, scale_xy: float, scale_z: float) -> np.ndarray:
+def blur(dist_map: np.ndarray, c_s: float, scale: data.Scale) -> np.ndarray:
     # Sigma formula from paper
     sigma = c_s * np.max(dist_map.flatten())
 
@@ -32,8 +32,8 @@ def blur(dist_map: np.ndarray, c_s: float, scale_xy: float, scale_z: float) -> n
     # sigma_xy, sigma_xy, sigma_z
 
     # Adjust standard deviations for each axis
-    sigma_xy = sigma * (scale_xy / scale_xy)
-    sigma_z = sigma * (scale_xy / scale_z)
+    sigma_xy = sigma * (scale.xy / scale.xy)
+    sigma_z = sigma * (scale.xy / scale.z)
 
     # Apply anisotropic Gaussian blur
     return ndimage.gaussian_filter(dist_map, sigma=(sigma_z, sigma_xy, sigma_xy))
