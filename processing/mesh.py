@@ -13,21 +13,20 @@ class Mesh:
 
     @staticmethod
     def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
+        # get some preliminary data
         rotation_matrix = bounding_box.rotation.as_matrix()
         center = bounding_box.o3d_obb.center
         vertices = bounding_box.vertices
 
+        # rotate mesh vertices to be aligned with the axes
         vertices -= center
         vertices = bounding_box.vertices @ rotation_matrix
         vertices += center
 
+        # rotate geom center to be aligned with the axes
         geom_center_rotated = geom_center - center
         geom_center_rotated = geom_center_rotated @ rotation_matrix
         geom_center_rotated += center
-
-        print(center)
-
-        print(bounding_box.o3d_obb.extent)
 
         # find the minimum vertex in all xyz directions
         min_vertex_index = np.argmin(np.sum(vertices, axis=1))
@@ -45,7 +44,6 @@ class Mesh:
 
         # create an array of xyz coordinates
         coords = np.array([[x, y, z] for x in x_coords for y in y_coords for z in z_coords])
-        print(coords)
 
         # since the x coordinate would be increasing each time (unless x = 0, then we do y)
         # then we can find how many times it would loop over
