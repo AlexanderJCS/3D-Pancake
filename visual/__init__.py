@@ -1,1 +1,1 @@
-from .visualize import SliceViewer
+from .visualize import *
