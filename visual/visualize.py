@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-class Interactive3DVisualizer:
+class SliceViewer:
     def __init__(self, distance_map, cmap="gray", clamp_negative=True):
         self.distance_map = distance_map
         if clamp_negative:

@@ -1,1 +1,1 @@
-from .visualize import Interactive3DVisualizer
+from .visualize import SliceViewer
