@@ -4,6 +4,7 @@ import open3d as o3d
 
 from processing import data
 from processing import obb
+from processing import mesh
 
 from typing import Optional
 
@@ -64,6 +65,7 @@ def o3d_point_cloud(
         dist_map: np.ndarray,
         scale: data.Scale,
         obbs: Optional[list[obb.Obb]] = None,
+        psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None
 ):
     geometries = [
@@ -74,10 +76,13 @@ def o3d_point_cloud(
         obbs = [bounding_box.o3d_obb for bounding_box in obbs]
         geometries.extend(obbs)
 
+    if psd_mesh is not None:
+        geometries.append(psd_mesh.mesh)
+
     if center is not None:
         # create a sphere to visualize the center
         sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * scale.zyx()) / 75, resolution=20)
         sphere.translate(center)
         geometries.append(sphere)
 
-    o3d.visualization.draw_geometries(geometries)
+    o3d.visualization.draw_geometries(geometries, window_name="3D Visualization", mesh_show_back_face=True)
