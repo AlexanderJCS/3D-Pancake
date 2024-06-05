@@ -34,10 +34,10 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float, visualize: bool 
         visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
-    center_point = center.geom_center(blurred, xy_len, z_len)
+    center_point = center.geom_center(distance_map, xy_len, z_len)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, center_point)
+        visual.o3d_point_cloud(distance_map, center_point, xy_len, z_len)
 
     return 0
     
