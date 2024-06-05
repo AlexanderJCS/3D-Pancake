@@ -67,7 +67,7 @@ def o3d_point_cloud(
         center: Optional[np.ndarray] = None
 ):
     geometries = [
-        o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(dist_map > 0) * scale.zyx()))
+        o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(dist_map > 0).astype(float)[:, ::-1] * scale.xyz()))
     ]
 
     if obbs is not None:
