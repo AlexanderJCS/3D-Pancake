@@ -9,7 +9,7 @@ def geom_center(dist_map: np.array, scale: data.Scale) -> np.ndarray:
 
     :param dist_map: The distance map
     :param scale: The scale of a voxel
-    :return: A 3-element float array containing the geometric center
+    :return: A 3-element float array containing the geometric center in XYZ coordinates
     """
 
     # Normalize the grid values so they add up to 1
