@@ -3,10 +3,23 @@ import numpy as np
 
 from . import data
 
+from scipy.spatial.transform import Rotation
+
 
 class Obb:
     def __init__(self, o3d_obb: o3d.geometry.OrientedBoundingBox):
         self.o3d_obb: o3d.geometry.OrientedBoundingBox = o3d_obb
+        self.vertices = np.array(o3d_obb.get_box_points())
+        self.rotation = Rotation.from_matrix(np.array(o3d_obb.R))
+
+    def get_rotation_vec(self) -> np.ndarray:
+        """
+        :return: A normalized 3D vector representing the rotation of the OBB in 3D space
+        """
+
+        rotation = self.rotation.as_euler("xyz", degrees=False)
+        rotation = np.array([np.cos(rotation[0]), np.sin(rotation[1]), np.sin(rotation[2])])
+        return rotation / np.linalg.norm(rotation)  # normalize
 
 
 def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:

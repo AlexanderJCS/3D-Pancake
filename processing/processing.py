@@ -4,6 +4,7 @@ from . import data
 from . import obb
 from . import dist
 from . import center
+from . import mesh
 
 import visual
 
@@ -36,10 +37,14 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
+    # Step D: find the center
     center_point = center.geom_center(distance_map, scale)
 
     if visualize:
         visual.o3d_point_cloud(distance_map, scale, center=center_point)
+
+    # Step E: create the mesh
+    psd_mesh = mesh.Mesh(main_obb, center_point)
 
     return 0
     
