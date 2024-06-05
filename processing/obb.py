@@ -67,23 +67,18 @@ def get_blobs(z_layer: np.ndarray) -> np.ndarray:
     return np.array(blobs)
 
 
-def gen_point_cloud(data: np.ndarray, z_layer: float, scale: data.Scale) -> o3d.geometry.PointCloud:
+def gen_point_cloud(raw_data: np.ndarray, z_layer: float, scale: data.Scale) -> o3d.geometry.PointCloud:
     """
     Converts a 3D numpy boolean array into a point cloud. Used for finding the OBB.
 
-    :param data: The 2D numpy boolean array for the given layer
+    :param raw_data: The 2D numpy boolean array for the given layer
     :param scale: The scale of a voxel
     :param z_layer: The z layer to convert
     :return: A point cloud of the True values in the array
     """
 
-    points = np.argwhere(data).astype(float)
+    points = np.argwhere(raw_data).astype(float)[:, ::-1]
     points *= scale.xy
-
-    # convert each point into 4 points representing the corners of the voxel
-    points = np.array([
-        [point[0], point[1], z_layer] for point in points
-    ])
 
     # add a z layer for each point: the z layer of the voxel and the z layer of the voxel + z_scale
     points = np.array([
@@ -129,7 +124,7 @@ def get_obbs(raw_data: np.ndarray, scale: data.Scale) -> tuple[Obb, list[Obb]]:
             o3d_obbs.append(obb)
 
     main_o3d_obb = o3d.geometry.OrientedBoundingBox().create_from_points(
-        o3d.utility.Vector3dVector(np.argwhere(raw_data) * scale.zyx())
+        o3d.utility.Vector3dVector(np.argwhere(raw_data)[:, ::-1] * scale.xyz())
     )
 
     main_o3d_obb.color = np.array([0, 0, 1])  # blue
