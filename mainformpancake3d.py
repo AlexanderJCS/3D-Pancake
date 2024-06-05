@@ -11,7 +11,8 @@ from .ui_mainformpancake3d import Ui_MainFormPancake3D
 
 from typing import Optional
 
-from processing import area
+from processing import processing
+from processing import data
 import numpy as np
 
 
@@ -74,14 +75,13 @@ class MainFormPancake3D(OrsAbstractWindow):
         max_indices = roi.getLocalBoundingBoxMax(0)
         max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-        data = roi.getNDArray()
-        data = data[min_indices[0]:max_indices[0], min_indices[1]:max_indices[1], min_indices[2]:max_indices[2]]
+        roi_arr = roi.getNDArray()
+        roi_arr = roi_arr[min_indices[0]:max_indices[0], min_indices[1]:max_indices[1], min_indices[2]:max_indices[2]]
 
         # Data processing
-        area.get_area(
-            data,
-            xy_len=float(self.ui.line_edit_xy_scale.text()),
-            z_len=float(self.ui.line_edit_z_scale.text()),
+        processing.get_area(
+            roi_arr,
+            scale=data.Scale(float(self.ui.line_edit_xy_scale.text()), float(self.ui.line_edit_z_scale.text())),
             visualize=self.ui.chk_visualize.isChecked(),
             c_s=float(self.ui.line_edit_c_s.text())
         )

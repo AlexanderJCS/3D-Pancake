@@ -5,14 +5,15 @@ and is only for development.
 """
 
 import numpy as np
-import processing
+from processing import processing
+from processing import data
 
 
 def run():
     with open("roi.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.area.get_area(roi, 5.03, 42.017, visualize=True))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=True))
 
 
 if __name__ == "__main__":
