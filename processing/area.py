@@ -3,6 +3,8 @@ import numpy as np
 from . import data
 from . import obb
 from . import dist
+from . import center
+
 import visual
 
 
@@ -31,6 +33,11 @@ def get_area(raw_data: np.ndarray, xy_len: float, z_len: float, visualize: bool 
     if visualize:
         visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
+
+    center_point = center.geom_center(blurred, xy_len, z_len)
+
+    if visualize:
+        visual.o3d_point_cloud(distance_map, center_point)
 
     return 0
     
