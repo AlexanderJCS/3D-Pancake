@@ -124,15 +124,12 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     stacked = np.column_stack((original_xyz, original_xyz + vectors_flat))
     interleaved = stacked.reshape(-1, original_xyz.shape[-1])
 
-    print(interleaved.shape)
-    print(interleaved)
-
     lineset.points = o3d.utility.Vector3dVector(interleaved)
 
     # create lines with the pattern [[0, 1], [2, 3], [4, 5], ...]
     lines = np.array([
         [i, i + 1]
-        for i in range(0, vectors_flat.shape[0], 2)
+        for i in range(0, interleaved.shape[0], 2)
     ])
 
     lineset.lines = o3d.utility.Vector2iVector(lines)
