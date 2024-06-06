@@ -29,4 +29,4 @@ def project_on_normal(gradient: np.array, normal: np.array) -> np.array:
     """
 
     magnitudes = np.dot(gradient, normal)
-    return normal * magnitudes[:, :, np.newaxis]
+    return normal * magnitudes[:, :, :, np.newaxis]

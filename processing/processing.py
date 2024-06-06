@@ -60,5 +60,13 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
     # todo: use open3d line sets to visualize the gradient
 
+    # Step G: project gradient onto normal
+    tangent = main_obb.get_rotation_vec()
+    normal = np.cross(tangent, np.array([0, 0, 1]))
+    projected_gradient = vectors.project_on_normal(gradient, normal)
+
+    if visualize or True:
+        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal])
+
     return 0
     

@@ -147,7 +147,7 @@ def o3d_point_cloud(
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None,
         vectors: Optional[np.ndarray] = None,
-        vector: Optional[np.ndarray] = None
+        vector: Optional[list] = None
 ):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="3D Visualization")
