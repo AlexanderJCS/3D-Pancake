@@ -8,7 +8,7 @@ def format_data(data: np.ndarray) -> np.ndarray:
     """
 
     data = data.astype(bool)
-    # TODO: more methodically add padding
-    # data = np.pad(data, 100, mode="constant")
+    # TODO: add padding in a better way
+    data = np.pad(data, 30, mode="constant")
 
     return data
