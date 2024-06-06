@@ -87,10 +87,10 @@ def get_arrow(vec: np.ndarray, origin=np.array([0, 0, 0]), scale=1):
 
     r_z, r_y = calculate_zy_rotation_for_arrow(vec)
     arrow_mesh = o3d.geometry.TriangleMesh().create_arrow(
-        cone_radius=size / 17.5 * scale,
-        cone_height=size * 0.2 * scale,
-        cylinder_radius=size / 30 * scale,
-        cylinder_height=size * (1 - 0.2 * scale)
+        cone_radius=max(size / 17.5 * scale, 0.05),
+        cone_height=max(size * 0.2 * scale, 0.05),
+        cylinder_radius=max(size / 30 * scale, 0.05),
+        cylinder_height=max(size * (1 - 0.2 * scale), 0.05)
     )
     arrow_mesh.rotate(r_y, center=np.array([0, 0, 0]))
     arrow_mesh.rotate(r_z, center=np.array([0, 0, 0]))
@@ -110,7 +110,8 @@ def o3d_point_cloud(
         scale: data.Scale,
         obbs: Optional[list[obb.Obb]] = None,
         psd_mesh: Optional[mesh.Mesh] = None,
-        center: Optional[np.ndarray] = None
+        center: Optional[np.ndarray] = None,
+        vectors: Optional[np.ndarray] = None
 ):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="3D Visualization")
@@ -137,6 +138,16 @@ def o3d_point_cloud(
         sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * scale.zyx()) / 75, resolution=20)
         sphere.translate(center)
         vis.add_geometry(sphere)
+
+    if vectors is not None:
+        print("adding vectors")
+        for z in range(vectors.shape[0]):
+            print(z / vectors.shape[0] * 100, "%")
+            for y in range(vectors.shape[1]):
+                for x in range(vectors.shape[2]):
+                    arrow = get_arrow(vectors[z, y, x], origin=np.array([x, y, z]) * scale.xyz(), scale=1/np.sqrt(3))
+                    vis.add_geometry(arrow)
+        print("completed adding vectors")
 
     vis.run()
     vis.destroy_window()
