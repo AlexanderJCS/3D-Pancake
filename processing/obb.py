@@ -17,9 +17,11 @@ class Obb:
         :return: A normalized 3D vector representing the rotation of the OBB in 3D space
         """
 
-        rotation = self.rotation.as_euler("xyz", degrees=False)
-        rotation = np.array([np.cos(rotation[0]), np.sin(rotation[1]), np.sin(rotation[2])])
-        return rotation / np.linalg.norm(rotation)  # normalize
+        # The rotation matrix R is a 3x3 matrix, and each column represents the direction of one of the OBB's local axes
+        # in the world frame. We can take the first column to get the direction of one of the faces of the OBB.
+        rotation_vec = self.rotation.as_matrix()[:, 0]
+
+        return rotation_vec / np.linalg.norm(rotation_vec)
 
 
 def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:
