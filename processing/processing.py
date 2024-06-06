@@ -31,7 +31,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     main_obb, blob_obbs = obb.get_obbs(formatted, scale)
 
     if visualize:
-        visual.o3d_point_cloud(raw_data, scale, obbs=[main_obb] + blob_obbs, vector=[main_obb.o3d_obb.center, main_obb.get_rotation_vec()])
+        visual.vis_3d(raw_data, scale, obbs=[main_obb] + blob_obbs, vector=[main_obb.o3d_obb.center, main_obb.get_rotation_vec()])
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, scale)
@@ -45,19 +45,19 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     center_point = center.geom_center(distance_map, scale)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, scale, center=center_point)
+        visual.vis_3d(distance_map, scale, center=center_point)
 
     # Step E: create the mesh
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(blurred, scale)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
+        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
     # todo: use open3d line sets to visualize the gradient
 
     # Step G: project gradient onto normal
@@ -66,7 +66,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
     if visualize:
-        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal])
+        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal])
 
     # Step H: deform the mesh
     for i in range(100):
@@ -74,7 +74,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         psd_mesh.deform(projected_gradient, scale)
 
     if visualize or True:
-        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     return 0
     

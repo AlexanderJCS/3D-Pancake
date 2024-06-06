@@ -140,7 +140,7 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     return lineset
 
 
-def o3d_point_cloud(
+def vis_3d(
         dist_map: np.ndarray,
         scale: data.Scale,
         obbs: Optional[list[obb.Obb]] = None,
