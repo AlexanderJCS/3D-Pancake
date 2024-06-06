@@ -5,6 +5,7 @@ import open3d as o3d
 import numpy as np
 
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 
 class Mesh:
@@ -58,6 +59,17 @@ class Mesh:
         # add back the shortest extent axis
         plane_vertices = np.insert(plane_vertices_2d, min_extent_index, min_vertex[min_extent_index], axis=1)
 
+        # Rotate the plane vertices back
+        plane_vertices -= center
+        plane_vertices = plane_vertices @ rotation_matrix.T
+        plane_vertices += center
+
+        # Linear interpolator for the plane, given the two longer extent axes find the shorter extent axis value
+        # use scipy for interpolation
+        interp = interpolate.LinearNDInterpolator(
+            np.delete(vertices, min_extent_index, axis=1),
+            vertices[:, min_extent_index]
+        )
 
 
         # plot in 3d
