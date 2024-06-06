@@ -50,7 +50,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     # Step E: create the mesh
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
-    if visualize:
+    if visualize or True:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
