@@ -81,8 +81,11 @@ def calculate_zy_rotation_for_arrow(vec):
     return r_z, r_y
 
 
-def get_arrow(vec: np.ndarray, origin=np.array([0, 0, 0]), scale=1):
+def get_arrow(vec: np.ndarray, origin: Optional[np.ndarray] = None, scale=1):
     # Answer by Yi Liu: https://stackoverflow.com/questions/59026581/create-arrows-in-open3d
+    if origin is None:
+        origin = np.zeros(3)
+
     size = np.sqrt(np.sum(vec ** 2))
 
     r_z, r_y = calculate_zy_rotation_for_arrow(vec)
@@ -143,7 +146,8 @@ def o3d_point_cloud(
         obbs: Optional[list[obb.Obb]] = None,
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None,
-        vectors: Optional[np.ndarray] = None
+        vectors: Optional[np.ndarray] = None,
+        vector: Optional[np.ndarray] = None
 ):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="3D Visualization")
@@ -176,6 +180,11 @@ def o3d_point_cloud(
         lineset = lineset_from_vectors(vectors, scale)
         vis.add_geometry(lineset)
         print("added lineset")
+
+    if vector is not None:
+        arrow = get_arrow(vector[1] * 100, vector[0], scale=1)
+        vis.add_geometry(arrow)
+        vis.add_geometry(o3d.geometry.TriangleMesh().create_coordinate_frame(origin=vector[0], size=100))
 
     vis.run()
     vis.destroy_window()

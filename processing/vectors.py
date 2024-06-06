@@ -17,3 +17,16 @@ def gen_gradient(dist_map: np.ndarray, scale: data.Scale) -> np.ndarray:
 
     # todo: verify that xyz is the correct order
     return np.stack((gradient_x, gradient_y, gradient_z), axis=-1)
+
+
+def project_on_normal(gradient: np.array, normal: np.array) -> np.array:
+    """
+    Projects the gradient onto the normal vector. This is done by taking the dot product of the gradient and the normal.
+
+    :param gradient: The gradient
+    :param normal: The normal vector
+    :return: The projected gradient
+    """
+
+    magnitudes = np.dot(gradient, normal)
+    return normal * magnitudes[:, :, np.newaxis]

@@ -31,7 +31,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     main_obb, blob_obbs = obb.get_obbs(formatted, scale)
 
     if visualize:
-        visual.o3d_point_cloud(raw_data, scale, obbs=[main_obb] + blob_obbs)
+        visual.o3d_point_cloud(raw_data, scale, obbs=[main_obb] + blob_obbs, vector=[main_obb.o3d_obb.center, main_obb.get_rotation_vec()])
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, scale)
@@ -56,7 +56,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(distance_map, scale)
 
-    if visualize or True:
+    if visualize:
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
     # todo: use open3d line sets to visualize the gradient
 
