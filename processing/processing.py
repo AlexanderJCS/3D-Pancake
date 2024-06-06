@@ -50,12 +50,13 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     # Step E: create the mesh
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
-    visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+    if visualize:
+        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(distance_map, scale)
 
-    if visualize:
+    if visualize or True:
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
     # todo: use open3d line sets to visualize the gradient
 

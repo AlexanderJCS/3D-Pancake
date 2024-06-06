@@ -98,11 +98,43 @@ def get_arrow(vec: np.ndarray, origin=np.array([0, 0, 0]), scale=1):
     return arrow_mesh
 
 
-# vis = o3d.visualization.Visualizer()
-# vis.create_window()
-# vis.add_geometry(get_arrow(vec=np.array([1, 1, 1]), origin=np.array([1, 1, 1]), scale=1/np.sqrt(3)))
-# vis.run()
-# vis.destroy_window()
+def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
+    lineset = o3d.geometry.LineSet()
+    vectors_flat = vectors.reshape(-1, vectors.shape[-1])  # ::-1 to convert from zyx to xyz
+
+    # reshape to xyz
+    vectors_flat = vectors_flat.reshape(-1, 3)
+
+    # create original xyz coordinates
+    original_xyz = np.array([
+        [x, y, z]
+        for z in range(vectors.shape[0])
+        for y in range(vectors.shape[1])
+        for x in range(vectors.shape[2])]
+    ).astype(float)
+
+    # scale by xyz
+    vectors_flat *= scale.xyz()
+    original_xyz *= scale.xyz()
+
+    # put in the pattern of [[original_xyz], [original_xyz + vector], ...]
+    stacked = np.column_stack((original_xyz, original_xyz + vectors_flat))
+    interleaved = stacked.reshape(-1, original_xyz.shape[-1])
+
+    print(interleaved.shape)
+    print(interleaved)
+
+    lineset.points = o3d.utility.Vector3dVector(interleaved)
+
+    # create lines with the pattern [[0, 1], [2, 3], [4, 5], ...]
+    lines = np.array([
+        [i, i + 1]
+        for i in range(0, vectors_flat.shape[0], 2)
+    ])
+
+    lineset.lines = o3d.utility.Vector2iVector(lines)
+
+    return lineset
 
 
 def o3d_point_cloud(
@@ -140,14 +172,10 @@ def o3d_point_cloud(
         vis.add_geometry(sphere)
 
     if vectors is not None:
-        print("adding vectors")
-        for z in range(vectors.shape[0]):
-            print(z / vectors.shape[0] * 100, "%")
-            for y in range(vectors.shape[1]):
-                for x in range(vectors.shape[2]):
-                    arrow = get_arrow(vectors[z, y, x], origin=np.array([x, y, z]) * scale.xyz(), scale=1/np.sqrt(3))
-                    vis.add_geometry(arrow)
-        print("completed adding vectors")
+        print("vectors")
+        lineset = lineset_from_vectors(vectors, scale)
+        vis.add_geometry(lineset)
+        print("added lineset")
 
     vis.run()
     vis.destroy_window()
