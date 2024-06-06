@@ -105,7 +105,7 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     lineset = o3d.geometry.LineSet()
     vectors_flat = vectors.reshape(-1, vectors.shape[-1])  # ::-1 to convert from zyx to xyz
 
-    vectors_flat *= 3  # scale the vectors
+    vectors_flat *= 7  # scale the vectors
 
     # create original xyz coordinates
     original_xyz = np.array([
@@ -142,20 +142,26 @@ def vis_3d(
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None,
         vectors: Optional[np.ndarray] = None,
-        vector: Optional[list] = None
+        vector: Optional[list] = None,
+        show_dist_map: bool = False
 ):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="3D Visualization")
     vis.get_render_option().mesh_show_back_face = True
     vis.get_render_option().mesh_show_wireframe = True
 
-    vis.add_geometry(
-        o3d.geometry.PointCloud(
-            o3d.utility.Vector3dVector(
-                np.argwhere(dist_map > 0).astype(float)[:, ::-1] * scale.xyz()  # remove negative values and scale
-            )
-        )
-    )
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(np.argwhere(dist_map > (-np.inf if show_dist_map else 0)).astype(float)[:, ::-1] * scale.xyz())
+
+    # get colors
+    if show_dist_map:
+        colors = dist_map.flatten()
+        colors = (colors - colors.min()) / (colors.max() - colors.min())  # normalize
+        # put colors from a flat array to an array of [[item item item], [item2 item2 item2], ...]
+        colors = np.array([colors, colors, colors]).T
+        pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    vis.add_geometry(pcd)
 
     if obbs is not None:
         for box in obbs:
