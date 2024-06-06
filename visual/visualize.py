@@ -105,8 +105,7 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     lineset = o3d.geometry.LineSet()
     vectors_flat = vectors.reshape(-1, vectors.shape[-1])  # ::-1 to convert from zyx to xyz
 
-    # reshape to xyz
-    vectors_flat = vectors_flat.reshape(-1, 3)
+    vectors_flat *= 3  # scale the vectors
 
     # create original xyz coordinates
     original_xyz = np.array([
@@ -117,7 +116,6 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     ).astype(float)
 
     # scale by xyz
-    vectors_flat *= scale.xyz()
     original_xyz *= scale.xyz()
 
     # put in the pattern of [[original_xyz], [original_xyz + vector], ...]
