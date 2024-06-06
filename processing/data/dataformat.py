@@ -7,4 +7,8 @@ def format_data(data: np.ndarray) -> np.ndarray:
     :return: A 3D boolean numpy array
     """
 
-    return data.astype(bool)
+    data = data.astype(bool)
+    # TODO: more methodically add padding
+    data = np.pad(data, 100, mode="constant")
+
+    return data
