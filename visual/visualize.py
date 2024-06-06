@@ -61,6 +61,50 @@ class SliceViewer:
         plt.show(block=True)  # if plt.show is not blocking, it will cause the window to not respond
 
 
+def calculate_zy_rotation_for_arrow(vec):
+    # Answer by Yi Liu: https://stackoverflow.com/questions/59026581/create-arrows-in-open3d
+    gamma = np.arctan2(vec[1], vec[0])
+    r_z = np.array([
+                    [np.cos(gamma), -np.sin(gamma), 0],
+                    [np.sin(gamma), np.cos(gamma), 0],
+                    [0, 0, 1]
+                ])
+
+    vec = r_z.T @ vec
+
+    beta = np.arctan2(vec[0], vec[2])
+    r_y = np.array([
+                    [np.cos(beta), 0, np.sin(beta)],
+                    [0, 1, 0],
+                    [-np.sin(beta), 0, np.cos(beta)]
+                ])
+    return r_z, r_y
+
+
+def get_arrow(vec: np.ndarray, origin=np.array([0, 0, 0]), scale=1):
+    # Answer by Yi Liu: https://stackoverflow.com/questions/59026581/create-arrows-in-open3d
+    size = np.sqrt(np.sum(vec ** 2))
+
+    r_z, r_y = calculate_zy_rotation_for_arrow(vec)
+    arrow_mesh = o3d.geometry.TriangleMesh().create_arrow(
+        cone_radius=size / 17.5 * scale,
+        cone_height=size * 0.2 * scale,
+        cylinder_radius=size / 30 * scale,
+        cylinder_height=size * (1 - 0.2 * scale)
+    )
+    arrow_mesh.rotate(r_y, center=np.array([0, 0, 0]))
+    arrow_mesh.rotate(r_z, center=np.array([0, 0, 0]))
+    arrow_mesh.translate(origin)
+    return arrow_mesh
+
+
+# vis = o3d.visualization.Visualizer()
+# vis.create_window()
+# vis.add_geometry(get_arrow(vec=np.array([1, 1, 1]), origin=np.array([1, 1, 1]), scale=1/np.sqrt(3)))
+# vis.run()
+# vis.destroy_window()
+
+
 def o3d_point_cloud(
         dist_map: np.ndarray,
         scale: data.Scale,
@@ -68,21 +112,31 @@ def o3d_point_cloud(
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None
 ):
-    geometries = [
-        o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(dist_map > 0).astype(float)[:, ::-1] * scale.xyz()))
-    ]
+    vis = o3d.visualization.Visualizer()
+    vis.create_window(window_name="3D Visualization")
+    vis.get_render_option().mesh_show_back_face = True
+    vis.get_render_option().mesh_show_wireframe = True
+
+    vis.add_geometry(
+        o3d.geometry.PointCloud(
+            o3d.utility.Vector3dVector(
+                np.argwhere(dist_map > 0).astype(float)[:, ::-1] * scale.xyz()  # remove negative values and scale
+            )
+        )
+    )
 
     if obbs is not None:
-        obbs = [bounding_box.o3d_obb for bounding_box in obbs]
-        geometries.extend(obbs)
+        for box in obbs:
+            vis.add_geometry(box.o3d_obb)
 
     if psd_mesh is not None:
-        geometries.append(psd_mesh.mesh)
+        vis.add_geometry(psd_mesh.mesh)
 
     if center is not None:
         # create a sphere to visualize the center
         sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * scale.zyx()) / 75, resolution=20)
         sphere.translate(center)
-        geometries.append(sphere)
+        vis.add_geometry(sphere)
 
-    o3d.visualization.draw_geometries(geometries, window_name="3D Visualization", mesh_show_wireframe=True, mesh_show_back_face=True)
+    vis.run()
+    vis.destroy_window()
