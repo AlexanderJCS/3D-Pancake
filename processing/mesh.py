@@ -4,7 +4,6 @@ from . import data
 import open3d as o3d
 import numpy as np
 
-import matplotlib.pyplot as plt
 
 class Mesh:
     def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
@@ -70,3 +69,13 @@ class Mesh:
         mesh.triangles = o3d.utility.Vector3iVector(indices)
 
         return mesh
+
+    def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
+        for i, vertex in enumerate(self.mesh.vertices):
+            vertex = np.array(vertex)
+
+            # find the gradient at the vertex
+            gradient = projected_gradient[int(vertex[2] / scale.z), int(vertex[1] / scale.xy), int(vertex[0] / scale.xy)]
+            vertex += gradient
+
+            self.mesh.vertices[i] = vertex

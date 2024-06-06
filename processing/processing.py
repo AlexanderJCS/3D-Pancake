@@ -54,7 +54,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
-    gradient = vectors.gen_gradient(distance_map, scale)
+    gradient = vectors.gen_gradient(blurred, scale)
 
     if visualize:
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
@@ -65,8 +65,16 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     normal = np.cross(tangent, np.array([0, 0, 1]))
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
-    if visualize or True:
+    if visualize:
         visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal])
+
+    # Step H: deform the mesh
+    for i in range(100):
+        print(i)
+        psd_mesh.deform(projected_gradient, scale)
+
+    if visualize or True:
+        visual.o3d_point_cloud(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     return 0
     
