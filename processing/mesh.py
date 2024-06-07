@@ -81,20 +81,20 @@ class Mesh:
         plane_vertices = plane_vertices @ rotation_matrix.T
         plane_vertices += center
 
+        # -- Extent Rotated --
+        extent_rotated = np.array([
+            np.max(plane_vertices[:, 0]) - np.min(plane_vertices[:, 0]),
+            np.max(plane_vertices[:, 1]) - np.min(plane_vertices[:, 1]),
+            np.max(plane_vertices[:, 2]) - np.min(plane_vertices[:, 2])
+        ])
+
+        min_extent_index_rotated = np.argmin(extent_rotated)
+
         # -- Create the vertices --
         # go from min_x to max_x, min_y to max_y, min_z to max_z
         x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]) + scale.xy, scale.xy)
         y_range = np.arange(np.min(plane_vertices[:, 1]), np.max(plane_vertices[:, 1]) + scale.xy, scale.xy)
         z_range = np.arange(np.min(plane_vertices[:, 2]), np.max(plane_vertices[:, 2]) + scale.z, scale.z)
-
-        # create the vertices
-        extent_rotated = np.array([
-            x_range.max() - x_range.min(),
-            y_range.max() - y_range.min(),
-            z_range.max() - z_range.min()
-        ])
-
-        min_extent_index_rotated = np.argmin(extent_rotated)
 
         x_range = x_range if min_extent_index_rotated != 0 else np.array([0])
         y_range = y_range if min_extent_index_rotated != 1 else np.array([0])
@@ -105,10 +105,10 @@ class Mesh:
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
         # -- Linear Interpolation --
-        plane_points = np.delete(plane_vertices, min_extent_index, axis=1)
-        plane_values = plane_vertices[:, min_extent_index]
+        plane_points = np.delete(plane_vertices, min_extent_index_rotated, axis=1)
+        plane_values = plane_vertices[:, min_extent_index_rotated]
 
-        interp_values = interp(plane_points, plane_values, np.delete(vertices, min_extent_index, axis=1))
+        interp_values = interp(plane_points, plane_values, np.delete(vertices, min_extent_index_rotated, axis=1))
         vertices[:, min_extent_index_rotated] = interp_values
 
         print("plotting")
