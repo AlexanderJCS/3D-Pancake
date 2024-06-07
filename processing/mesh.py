@@ -76,18 +76,21 @@ class Mesh:
 
         print("creating vertices")
         # go from min_x to max_x, min_y to max_y, min_z to max_z
-        x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]), scale.xy) \
-            if min_vertex_index != 0 else 0
-        y_range = np.arange(np.min(plane_vertices[:, 1]), np.max(plane_vertices[:, 1]), scale.xy) \
-            if min_vertex_index != 1 else 0
-        z_range = np.arange(np.min(plane_vertices[:, 2]), np.max(plane_vertices[:, 2]), scale.z) \
-            if min_vertex_index != 2 else 0
+        x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]) + scale.xy, scale.xy) \
+            # if min_vertex_index != 0 else 0
+        y_range = np.arange(np.min(plane_vertices[:, 1]), np.max(plane_vertices[:, 1]) + scale.xy, scale.xy) \
+            # if min_vertex_index != 1 else 0
+        z_range = np.arange(np.min(plane_vertices[:, 2]), np.max(plane_vertices[:, 2]) + scale.z, scale.z) \
+            # if min_vertex_index != 2 else 0
+
+        extent_rotated = np.array([x_range.max() - x_range.min(), y_range.max() - y_range.min(), z_range.max() - z_range.min()])
+        min_extent_index_rotated = np.argmin(extent_rotated)
 
         print("filling")
         # fill the zero range with the interpolated values
         if isinstance(x_range, int):
-            yz = np.array([[y, z] for z in z_range for y in y_range])
-            x_range = np.random.randn(yz.shape[0])
+            x_range = y_range.copy()
+            y_range = np.zeros(x_range.shape[0])
         if isinstance(y_range, int):
             xz = np.array([[[x, z] for z in z_range] for x in x_range])
             y_range = interp(xz)
@@ -99,15 +102,22 @@ class Mesh:
         # create the vertices
         print(x_range.max() - x_range.min(), y_range.max() - y_range.min(), z_range.max() - z_range.min())
 
+        x_range = x_range if min_extent_index_rotated != 0 else np.array([0])
+        y_range = y_range if min_extent_index_rotated != 1 else np.array([0])
+        z_range = z_range if min_extent_index_rotated != 2 else np.array([0])
+
         x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
+
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
         print(vertices.shape)
+
+        vertices[:, 1] = 0
 
         print("plotting")
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
         pcd.paint_uniform_color([0.5, 0.5, 0.5])
         data_pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(raw_data)[:, ::-1] * scale.xyz()))
-        o3d.visualization.draw_geometries([pcd, bounding_box.o3d_obb, data_pcd])
+        o3d.visualization.draw_geometries([pcd, bounding_box.o3d_obb])
 
         # plot in 3d
         fig = plt.figure()
