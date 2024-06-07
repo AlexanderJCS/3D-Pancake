@@ -4,17 +4,16 @@ from . import data
 import open3d as o3d
 import numpy as np
 
-import matplotlib.pyplot as plt
 from scipy import interpolate
 
 
 class Mesh:
-    def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale, raw_data):
+    def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
         self.bounding_box = bounding_box
-        self.mesh = self._gen(bounding_box, geom_center, scale, raw_data)
+        self.mesh = self._gen(bounding_box, geom_center, scale)
 
     @staticmethod
-    def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale, raw_data):
+    def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
         # get some preliminary data
         rotation_matrix = bounding_box.rotation.as_matrix()
         center = bounding_box.o3d_obb.center
@@ -59,11 +58,12 @@ class Mesh:
         # add back the shortest extent axis
         plane_vertices = np.insert(plane_vertices_2d, min_extent_index, min_vertex[min_extent_index], axis=1)
 
-        # Rotate the plane vertices back
+        # rotate the vertices back
         plane_vertices -= center
         plane_vertices = plane_vertices @ rotation_matrix.T
         plane_vertices += center
 
+        # -- Linear Interpolator --
         # Linear interpolator for the plane, given the two longer extent axes find the shorter extent axis value
         # use scipy for interpolation
         plane_points = np.delete(plane_vertices, min_extent_index, axis=1)
@@ -74,7 +74,7 @@ class Mesh:
             plane_vertices[:, min_extent_index]
         )
 
-        print("creating vertices")
+        # -- Create the vertices --
         # go from min_x to max_x, min_y to max_y, min_z to max_z
         x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]) + scale.xy, scale.xy) \
             # if min_vertex_index != 0 else 0
@@ -82,9 +82,6 @@ class Mesh:
             # if min_vertex_index != 1 else 0
         z_range = np.arange(np.min(plane_vertices[:, 2]), np.max(plane_vertices[:, 2]) + scale.z, scale.z) \
             # if min_vertex_index != 2 else 0
-
-        extent_rotated = np.array([x_range.max() - x_range.min(), y_range.max() - y_range.min(), z_range.max() - z_range.min()])
-        min_extent_index_rotated = np.argmin(extent_rotated)
 
         print("filling")
         # fill the zero range with the interpolated values
@@ -98,9 +95,14 @@ class Mesh:
             xy = np.array([[[x, y] for y in y_range] for x in x_range])
             z_range = interp(xy)
 
-        print(x_range)
         # create the vertices
-        print(x_range.max() - x_range.min(), y_range.max() - y_range.min(), z_range.max() - z_range.min())
+        extent_rotated = np.array([
+            x_range.max() - x_range.min(),
+            y_range.max() - y_range.min(),
+            z_range.max() - z_range.min()
+        ])
+
+        min_extent_index_rotated = np.argmin(extent_rotated)
 
         x_range = x_range if min_extent_index_rotated != 0 else np.array([0])
         y_range = y_range if min_extent_index_rotated != 1 else np.array([0])
@@ -116,16 +118,7 @@ class Mesh:
         print("plotting")
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
         pcd.paint_uniform_color([0.5, 0.5, 0.5])
-        data_pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(raw_data)[:, ::-1] * scale.xyz()))
         o3d.visualization.draw_geometries([pcd, bounding_box.o3d_obb])
-
-        # plot in 3d
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(vertices[:, 0], vertices[:, 1], vertices[:, 2])
-        ax.scatter(plane_vertices[:, 0], plane_vertices[:, 1], plane_vertices[:, 2])
-        ax.scatter(geom_center_rotated[0], geom_center_rotated[1], geom_center_rotated[2])
-        plt.show()
 
         return None
 
