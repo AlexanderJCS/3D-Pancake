@@ -106,6 +106,26 @@ class Mesh:
         x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
+        # Create vertex indices for a mesh
+        # since the x coordinate would be increasing each time (unless x = 0, then we do y)
+        # then we can find how many times it would loop over
+        loop = x_range.shape[0] if min_extent_index_rotated != 0 else y_range.shape[0]
+
+        # this is the one after loop, so if loop is x, then this is y, if loop is y, this is z
+        loop_next = y_range.shape[0] if min_extent_index_rotated != 1 else z_range.shape[0]
+
+        # calculate the mesh indices
+        indices = []
+        for i in range(loop - 1):
+            for j in range(loop_next - 1):
+                indices.append([i * loop_next + j, i * loop_next + j + 1, (i + 1) * loop_next + j])
+                indices.append([i * loop_next + j + 1, (i + 1) * loop_next + j + 1, (i + 1) * loop_next + j])
+
+        # Create the mesh
+        mesh = o3d.geometry.TriangleMesh()
+        mesh.vertices = o3d.utility.Vector3dVector(vertices)
+        mesh.triangles = o3d.utility.Vector3iVector(indices)
+
         # -- Linear Interpolation --
         plane_points = np.delete(plane_vertices, min_extent_index_rotated, axis=1)
         plane_values = plane_vertices[:, min_extent_index_rotated]
@@ -114,27 +134,13 @@ class Mesh:
 
         interp_values = interpolator(np.delete(vertices, min_extent_index_rotated, axis=1))
         vertices[:, min_extent_index_rotated] = interp_values
+        mesh.vertices = o3d.utility.Vector3dVector(vertices)
 
         # -- Remove any vertices which has nan values at the min_extent_index_rotated index --
-        vertices = vertices[~np.isnan(vertices[:, min_extent_index_rotated])]
+        remove_vertex_indices = np.isnan(vertices[:, min_extent_index_rotated]).nonzero()[0]
+        mesh.remove_vertices_by_index(remove_vertex_indices)
 
-        # -- Create a mesh from the vertices --
-        pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
-        pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-
-        mesh, _ = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=9, width=0, scale=1.1, linear_fit=False)
-
-        print("plotting")
-        pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
-        pcd.paint_uniform_color([0.5, 0.5, 0.5])
-
-        # plot the plane vertices
-        plane_vertices = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(plane_vertices))
-        plane_vertices.paint_uniform_color([1, 0, 0])
-
-        o3d.visualization.draw_geometries([pcd, plane_vertices, bounding_box.o3d_obb, mesh])
-
-        return None
+        return mesh
 
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
         for i, vertex in enumerate(self.mesh.vertices):
