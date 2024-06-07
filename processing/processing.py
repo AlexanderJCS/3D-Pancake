@@ -50,22 +50,21 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     # Step E: create the mesh
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
-    if visualize or True:
+    if visualize:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(blurred, scale)
 
-    if visualize or True:
+    if visualize:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
-    # todo: use open3d line sets to visualize the gradient
 
     # Step G: project gradient onto normal
     tangent = main_obb.get_rotation_vec()
     normal = np.cross(tangent, np.array([0, 0, 1]))
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
-    if visualize or True:
+    if visualize:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal], vectors=projected_gradient)
 
     # Step H: deform the mesh
@@ -73,7 +72,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         print(i)
         psd_mesh.deform(projected_gradient, scale)
 
-    if visualize or True:
+    if visualize:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
     return 0
