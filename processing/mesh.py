@@ -114,7 +114,12 @@ class Mesh:
         print("plotting")
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
         pcd.paint_uniform_color([0.5, 0.5, 0.5])
-        o3d.visualization.draw_geometries([pcd, bounding_box.o3d_obb])
+
+        # plot the plane vertices
+        plane_vertices = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(plane_vertices))
+        plane_vertices.paint_uniform_color([1, 0, 0])
+
+        o3d.visualization.draw_geometries([pcd, plane_vertices, bounding_box.o3d_obb])
 
         return None
 
