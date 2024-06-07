@@ -23,7 +23,7 @@ class TestInterp(unittest.TestCase):
         self.assertEqual(interp(vertices, values, np.array([[0, 1]])), -1)
         self.assertEqual(interp(vertices, values, np.array([[1, 0]])), -1)
 
-    def real_world_test(self):
+    def test_real_world(self):
         """
         Tests the interp function with real world data
         """
@@ -38,7 +38,7 @@ class TestInterp(unittest.TestCase):
         z = np.array([464.59722127, 229.20921326, 239.74814519, 454.05828935])
 
         # Test the corners
-        self.assertAlmostEqual(interp(xy, z, np.array([xy[0]])), z[0])
-        self.assertAlmostEqual(interp(xy, z, np.array([xy[1]])), z[1])
-        self.assertAlmostEqual(interp(xy, z, np.array([xy[2]])), z[2])
-        self.assertAlmostEqual(interp(xy, z, np.array([xy[3]])), z[3])
+        self.assertAlmostEqual(float(interp(xy, z, np.array([xy[0]]))[0]), float(z[0]))
+        self.assertAlmostEqual(float(interp(xy, z, np.array([xy[1]]))[0]), float(z[1]))
+        self.assertAlmostEqual(float(interp(xy, z, np.array([xy[2]]))), float(z[2]))
+        self.assertAlmostEqual(float(interp(xy, z, np.array([xy[3]]))), float(z[3]))

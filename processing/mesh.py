@@ -13,29 +13,17 @@ def interp(plane_vertices: np.ndarray, plane_values: np.ndarray, vertices: np.nd
     :param plane_vertices: Four 2D vertices that define the plane
     :param plane_values: The 1D values for each vertex
     :param vertices: The 2D vertices to interpolate
-    :return: The interpolated values at the given vertices
+    :return: The interpolated vertices
     """
-    # Extract the vertices of the plane
-    x1, y1 = plane_vertices[0]
-    x2, y2 = plane_vertices[3]
 
-    # Extract the values at the vertices of the plane
-    Q11 = plane_values[0]
-    Q21 = plane_values[1]
-    Q12 = plane_values[2]
-    Q22 = plane_values[3]
+    x_slope = (plane_values[1] - plane_values[0]) / (plane_vertices[1, 0] - plane_vertices[0, 0])
+    y_slope = (plane_values[2] - plane_values[0]) / (plane_vertices[2, 1] - plane_vertices[0, 1])
 
-    # Initialize result array
-    interpolated_values = np.zeros(vertices.shape[0])
+    x_intercept = plane_values[0] - x_slope * plane_vertices[0, 0]
+    y_intercept = plane_values[0] - y_slope * plane_vertices[0, 1]
 
-    for i, (x, y) in enumerate(vertices):
-        # Perform bilinear interpolation
-        f_xy1 = (x2 - x) / (x2 - x1) * Q11 + (x - x1) / (x2 - x1) * Q21
-        f_xy2 = (x2 - x) / (x2 - x1) * Q12 + (x - x1) / (x2 - x1) * Q22
-        f_xy = (y2 - y) / (y2 - y1) * f_xy1 + (y - y1) / (y2 - y1) * f_xy2
-        interpolated_values[i] = f_xy
+    return x_slope * vertices[:, 0] + y_slope * vertices[:, 1] + x_intercept + y_intercept
 
-    return interpolated_values
 
 
 class Mesh:
