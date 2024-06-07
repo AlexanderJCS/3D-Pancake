@@ -6,26 +6,6 @@ import numpy as np
 
 from scipy import interpolate
 
-def interp(plane_vertices: np.ndarray, plane_values: np.ndarray, vertices: np.ndarray) -> np.ndarray:
-    """
-    An interpolation function that can be used to interpolate the vertices in the plane. This function is
-    designed to interpolate and extrapolate linearly.
-
-    :param plane_vertices: Four 2D vertices that define the plane
-    :param plane_values: The 1D values for each vertex
-    :param vertices: The 2D vertices to interpolate
-    :return: The interpolated vertices
-    """
-
-    x_slope = (plane_values[1] - plane_values[0]) / (plane_vertices[1, 0] - plane_vertices[0, 0])
-    y_slope = (plane_values[2] - plane_values[0]) / (plane_vertices[2, 1] - plane_vertices[0, 1])
-
-    x_intercept = plane_values[0] - x_slope * plane_vertices[0, 0]
-    y_intercept = plane_values[0] - y_slope * plane_vertices[0, 1]
-
-    return x_slope * vertices[:, 0] + y_slope * vertices[:, 1] + x_intercept + y_intercept
-
-
 
 class Mesh:
     def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
