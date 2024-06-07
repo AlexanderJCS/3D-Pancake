@@ -4,6 +4,7 @@ from . import data
 import open3d as o3d
 import numpy as np
 
+from scipy import interpolate
 
 def interp(plane_vertices: np.ndarray, plane_values: np.ndarray, vertices: np.ndarray) -> np.ndarray:
     """
@@ -109,26 +110,29 @@ class Mesh:
         plane_points = np.delete(plane_vertices, min_extent_index_rotated, axis=1)
         plane_values = plane_vertices[:, min_extent_index_rotated]
 
-        interp_values = interp(plane_points, plane_values, np.delete(vertices, min_extent_index_rotated, axis=1))
+        interpolator = interpolate.LinearNDInterpolator(plane_points, plane_values)
+
+        interp_values = interpolator(np.delete(vertices, min_extent_index_rotated, axis=1))
         vertices[:, min_extent_index_rotated] = interp_values
+
+        # -- Remove any vertices which has nan values at the min_extent_index_rotated index --
+        vertices = vertices[~np.isnan(vertices[:, min_extent_index_rotated])]
+
+        # -- Create a mesh from the vertices --
+        pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
+        pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+
+        mesh, _ = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=9, width=0, scale=1.1, linear_fit=False)
 
         print("plotting")
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
         pcd.paint_uniform_color([0.5, 0.5, 0.5])
 
-        # interpolate the plane vertices themselves to see if it works
-        print(plane_points)
-        print(plane_values)
-        print(interp(plane_points, plane_values, np.array([plane_points[0]])))
-        print(interp(plane_points, plane_values, np.array([plane_points[1]])))
-        print(interp(plane_points, plane_values, np.array([plane_points[2]])))
-        print(interp(plane_points, plane_values, np.array([plane_points[3]])))
-
         # plot the plane vertices
         plane_vertices = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(plane_vertices))
         plane_vertices.paint_uniform_color([1, 0, 0])
 
-        o3d.visualization.draw_geometries([pcd, plane_vertices, bounding_box.o3d_obb])
+        o3d.visualization.draw_geometries([pcd, plane_vertices, bounding_box.o3d_obb, mesh])
 
         return None
 
