@@ -22,3 +22,23 @@ class TestInterp(unittest.TestCase):
         # Test extrapolation
         self.assertEqual(interp(vertices, values, np.array([[0, 1]])), -1)
         self.assertEqual(interp(vertices, values, np.array([[1, 0]])), -1)
+
+    def real_world_test(self):
+        """
+        Tests the interp function with real world data
+        """
+
+        xy = np.array([
+            [260.62501686, 1135.26210923],
+            [522.6748873, 1934.23742692],
+            [805.47019885, 1623.5213609],
+            [-22.17029468, 1445.97817525]
+        ])
+
+        z = np.array([464.59722127, 229.20921326, 239.74814519, 454.05828935])
+
+        # Test the corners
+        self.assertAlmostEqual(interp(xy, z, np.array([xy[0]])), z[0])
+        self.assertAlmostEqual(interp(xy, z, np.array([xy[1]])), z[1])
+        self.assertAlmostEqual(interp(xy, z, np.array([xy[2]])), z[2])
+        self.assertAlmostEqual(interp(xy, z, np.array([xy[3]])), z[3])
