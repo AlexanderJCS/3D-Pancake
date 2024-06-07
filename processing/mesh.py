@@ -9,12 +9,12 @@ from scipy import interpolate
 
 
 class Mesh:
-    def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
+    def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale, raw_data):
         self.bounding_box = bounding_box
-        self.mesh = self._gen(bounding_box, geom_center, scale)
+        self.mesh = self._gen(bounding_box, geom_center, scale, raw_data)
 
     @staticmethod
-    def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
+    def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale, raw_data):
         # get some preliminary data
         rotation_matrix = bounding_box.rotation.as_matrix()
         center = bounding_box.o3d_obb.center
@@ -66,11 +66,48 @@ class Mesh:
 
         # Linear interpolator for the plane, given the two longer extent axes find the shorter extent axis value
         # use scipy for interpolation
+        plane_points = np.delete(plane_vertices, min_extent_index, axis=1)
+        plane_values = plane_vertices[:, min_extent_index]
+
         interp = interpolate.LinearNDInterpolator(
-            np.delete(vertices, min_extent_index, axis=1),
-            vertices[:, min_extent_index]
+            np.delete(plane_vertices, min_extent_index, axis=1),
+            plane_vertices[:, min_extent_index]
         )
 
+        print("creating vertices")
+        # go from min_x to max_x, min_y to max_y, min_z to max_z
+        x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]), scale.xy) \
+            if min_vertex_index != 0 else 0
+        y_range = np.arange(np.min(plane_vertices[:, 1]), np.max(plane_vertices[:, 1]), scale.xy) \
+            if min_vertex_index != 1 else 0
+        z_range = np.arange(np.min(plane_vertices[:, 2]), np.max(plane_vertices[:, 2]), scale.z) \
+            if min_vertex_index != 2 else 0
+
+        print("filling")
+        # fill the zero range with the interpolated values
+        if isinstance(x_range, int):
+            yz = np.array([[y, z] for z in z_range for y in y_range])
+            x_range = np.random.randn(yz.shape[0])
+        if isinstance(y_range, int):
+            xz = np.array([[[x, z] for z in z_range] for x in x_range])
+            y_range = interp(xz)
+        if isinstance(z_range, int):
+            xy = np.array([[[x, y] for y in y_range] for x in x_range])
+            z_range = interp(xy)
+
+        print(x_range)
+        # create the vertices
+        print(x_range.max() - x_range.min(), y_range.max() - y_range.min(), z_range.max() - z_range.min())
+
+        x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
+        vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
+        print(vertices.shape)
+
+        print("plotting")
+        pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
+        pcd.paint_uniform_color([0.5, 0.5, 0.5])
+        data_pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.argwhere(raw_data)[:, ::-1] * scale.xyz()))
+        o3d.visualization.draw_geometries([pcd, bounding_box.o3d_obb, data_pcd])
 
         # plot in 3d
         fig = plt.figure()
@@ -87,7 +124,8 @@ class Mesh:
             vertex = np.array(vertex)
 
             # find the gradient at the vertex
-            gradient = projected_gradient[int(vertex[2] / scale.z), int(vertex[1] / scale.xy), int(vertex[0] / scale.xy)]
+            gradient = projected_gradient[
+                int(vertex[2] / scale.z), int(vertex[1] / scale.xy), int(vertex[0] / scale.xy)]
             vertex += gradient
 
             self.mesh.vertices[i] = vertex
