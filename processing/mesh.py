@@ -108,12 +108,20 @@ class Mesh:
         y_range = y_range if min_extent_index_rotated != 1 else np.array([0])
         z_range = z_range if min_extent_index_rotated != 2 else np.array([0])
 
+        # Create the [[x, y, z], ...] array
         x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
-
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
-        print(vertices.shape)
 
-        vertices[:, 1] = 0
+        # Interpolate the min_extent_index_rotated axis
+        if min_extent_index_rotated == 0:
+            yz = np.array([[y, z] for y in y_range for z in z_range])
+            vertices[:, min_extent_index_rotated] = interp(yz)
+        elif min_extent_index_rotated == 1:
+            xz = np.array([[x, z] for x in x_range for z in z_range])
+            vertices[:, min_extent_index_rotated] = interp(xz)
+        else:
+            xy = np.array([[x, y] for x in x_range for y in y_range])
+            vertices[:, min_extent_index_rotated] = interp(xy)
 
         print("plotting")
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
