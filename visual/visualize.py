@@ -172,7 +172,7 @@ def vis_3d(
 
     if center is not None:
         # create a sphere to visualize the center
-        sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * scale.zyx()) / 75, resolution=20)
+        sphere = o3d.geometry.TriangleMesh().create_sphere(radius=max(dist_map.shape * scale.zyx()) / 200, resolution=20)
         sphere.translate(center)
         vis.add_geometry(sphere)
 
