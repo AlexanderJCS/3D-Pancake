@@ -4,7 +4,25 @@ from . import data
 import open3d as o3d
 import numpy as np
 
-from scipy import interpolate
+
+def interp(plane_vertices: np.ndarray, plane_values: np.ndarray, vertices: np.ndarray) -> np.ndarray:
+    """
+    An interpolation function that can be used to interpolate the vertices in the plane. This function is
+    designed to interpolate and extrapolate linearly.
+
+    :param plane_vertices: Four 2D vertices that define the plane
+    :param plane_values: The 1D values for each vertex
+    :param vertices: The 2D vertices to interpolate
+    :return: The interpolated vertices
+    """
+
+    x_slope = (plane_values[1] - plane_values[0]) / (plane_vertices[1, 0] - plane_vertices[0, 0])
+    y_slope = (plane_values[2] - plane_values[0]) / (plane_vertices[2, 1] - plane_vertices[0, 1])
+
+    x_intercept = plane_values[0] - x_slope * plane_vertices[0, 0]
+    y_intercept = plane_values[0] - y_slope * plane_vertices[0, 1]
+
+    return x_slope * vertices[:, 0] + y_slope * vertices[:, 1] + x_intercept + y_intercept
 
 
 class Mesh:
@@ -63,17 +81,6 @@ class Mesh:
         plane_vertices = plane_vertices @ rotation_matrix.T
         plane_vertices += center
 
-        # -- Linear Interpolator --
-        # Linear interpolator for the plane, given the two longer extent axes find the shorter extent axis value
-        # use scipy for interpolation
-        plane_points = np.delete(plane_vertices, min_extent_index, axis=1)
-        plane_values = plane_vertices[:, min_extent_index]
-
-        interp = interpolate.LinearNDInterpolator(
-            np.delete(plane_vertices, min_extent_index, axis=1),
-            plane_vertices[:, min_extent_index]
-        )
-
         # -- Create the vertices --
         # go from min_x to max_x, min_y to max_y, min_z to max_z
         x_range = np.arange(np.min(plane_vertices[:, 0]), np.max(plane_vertices[:, 0]) + scale.xy, scale.xy)
@@ -97,8 +104,11 @@ class Mesh:
         x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
-        # Interpolate the min_extent_index_rotated axis
-        interp_values = interp(np.delete(vertices, min_extent_index_rotated, axis=1))
+        # -- Linear Interpolation --
+        plane_points = np.delete(plane_vertices, min_extent_index, axis=1)
+        plane_values = plane_vertices[:, min_extent_index]
+
+        interp_values = interp(plane_points, plane_values, np.delete(vertices, min_extent_index, axis=1))
         vertices[:, min_extent_index_rotated] = interp_values
 
         print("plotting")
