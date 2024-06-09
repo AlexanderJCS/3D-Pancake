@@ -1,5 +1,3 @@
-import time
-
 from . import obb
 from . import data
 
@@ -125,6 +123,10 @@ class Mesh:
         return mesh
     
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
+        # TODO: interpolation does not take into account that the axes are scaled differently
+        # TODO: look into creating a custom interpolation function that takes in 2 points for each axis and the point
+        # to interpolate as a possible speed-up solution
+        
         vertices = np.asarray(self.mesh.vertices)
         
         # Convert the vertices to the vertex_index_float
