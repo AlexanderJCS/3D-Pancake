@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 
 from . import data
@@ -23,7 +21,6 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     :return: Finds the surface area given the raw data
     """
 
-    start_full = time.time()
     # Step A: load and format data
     formatted = data.format_data(raw_data)
 
