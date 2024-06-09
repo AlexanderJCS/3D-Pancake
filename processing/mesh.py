@@ -125,41 +125,56 @@ class Mesh:
         return mesh
     
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
-        for i, vertex in enumerate(self.mesh.vertices):
-            vertex = np.array(vertex)
-            
-            # TODO: this assumes the x, y, and z scales are the same when interpolating. This is not always the case
-            vertex_index_float = np.array([vertex[2] / scale.z, vertex[1] / scale.xy, vertex[0] / scale.xy])
-            vertex_index_int = vertex_index_float.astype(int)
-            
-            # create all 8 surrounding vertices
-            surrounding_vertices = np.array([
-                [vertex_index_int[0], vertex_index_int[1], vertex_index_int[2]],
-                [vertex_index_int[0] + 1, vertex_index_int[1], vertex_index_int[2]],
-                [vertex_index_int[0], vertex_index_int[1] + 1, vertex_index_int[2]],
-                [vertex_index_int[0], vertex_index_int[1], vertex_index_int[2] + 1],
-                [vertex_index_int[0] + 1, vertex_index_int[1] + 1, vertex_index_int[2]],
-                [vertex_index_int[0] + 1, vertex_index_int[1], vertex_index_int[2] + 1],
-                [vertex_index_int[0], vertex_index_int[1] + 1, vertex_index_int[2] + 1],
-                [vertex_index_int[0] + 1, vertex_index_int[1] + 1, vertex_index_int[2] + 1]
-            ])
-            
-            # get the gradient values at the point
-            surrounding_gradients = np.array([
-                projected_gradient[v[0], v[1], v[2]]
-                for v in surrounding_vertices
-            ])
-            
-            # create linear interpolation function
-            gradient = interpolate.griddata(
-                surrounding_vertices, surrounding_gradients, vertex_index_float, method="linear"
-            )[0]
-            
-            # check if there are any nan values in the gradient
-            if np.isnan(gradient).any():
-                print("warning: nan values in gradient, skipping vertex")
-                continue
-            
-            vertex += gradient * 10
-            
-            self.mesh.vertices[i] = vertex
+        vertices = np.asarray(self.mesh.vertices)
+        
+        # Convert the vertices to the vertex_index_float
+        vertex_indices_float = np.stack([
+            vertices[:, 2] / scale.z,
+            vertices[:, 1] / scale.xy,
+            vertices[:, 0] / scale.xy
+        ], axis=-1)
+        
+        # Convert the float indices to int indices for the surrounding vertices
+        vertex_indices_int = vertex_indices_float.astype(int)
+        
+        # Create all 8 surrounding vertices for each vertex
+        surrounding_offsets = np.array([
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 1, 0],
+            [1, 0, 1],
+            [0, 1, 1],
+            [1, 1, 1]
+        ])
+        
+        # Shape: (num_vertices, 8, 3)
+        surrounding_vertices = vertex_indices_int[:, np.newaxis, :] + surrounding_offsets
+        
+        # Flatten the arrays for interpolation
+        flattened_surrounding_vertices = surrounding_vertices.reshape(-1, 3)
+        flattened_surrounding_gradients = np.zeros((flattened_surrounding_vertices.shape[0], 3))
+        
+        # Fill the flattened_surrounding_gradients
+        for i in range(8):
+            flattened_surrounding_gradients[i::8, :] = projected_gradient[
+                flattened_surrounding_vertices[i::8, 0],
+                flattened_surrounding_vertices[i::8, 1],
+                flattened_surrounding_vertices[i::8, 2]
+            ]
+        
+        # Interpolate the gradient values
+        interpolator = interpolate.LinearNDInterpolator(flattened_surrounding_vertices, flattened_surrounding_gradients)
+        gradients = interpolator(vertex_indices_float)
+        
+        # Check for NaN values and update vertices
+        nan_mask = np.isnan(gradients).any(axis=1)
+        if nan_mask.any():
+            print("warning: nan values in gradient, skipping vertices")
+        
+        gradients[~nan_mask] *= 10
+        vertices[~nan_mask] += gradients[~nan_mask]
+        
+        # Convert vertices to open3d.utility.Vector3dVector and assign back to the mesh
+        self.mesh.vertices = o3d.utility.Vector3dVector(vertices)

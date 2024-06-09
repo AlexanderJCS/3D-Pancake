@@ -1,5 +1,7 @@
 import numpy as np
 
+import time
+
 from . import data
 from . import obb
 from . import dist
@@ -67,7 +69,10 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     # Step H: deform the mesh
     for i in range(100):
         print(i)
+        start = time.time()
         psd_mesh.deform(projected_gradient, scale)
+        end = time.time()
+        print(end - start)
 
     if visualize or True:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
