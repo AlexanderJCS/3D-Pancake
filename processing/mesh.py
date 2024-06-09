@@ -1,3 +1,5 @@
+import time
+
 from . import obb
 from . import data
 
@@ -121,14 +123,42 @@ class Mesh:
         mesh.remove_vertices_by_index(remove_vertex_indices)
 
         return mesh
-
+    
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
         for i, vertex in enumerate(self.mesh.vertices):
             vertex = np.array(vertex)
-
-            # find the gradient at the vertex
-            gradient = projected_gradient[
-                int(vertex[2] / scale.z), int(vertex[1] / scale.xy), int(vertex[0] / scale.xy)]
+            
+            vertex_index_float = np.array([vertex[2] / scale.z, vertex[1] / scale.xy, vertex[0] / scale.xy])
+            vertex_index_int = vertex_index_float.astype(int)
+            
+            # create all 8 surrounding vertices
+            surrounding_vertices = np.array([
+                [vertex_index_int[0], vertex_index_int[1], vertex_index_int[2]],
+                [vertex_index_int[0] + 1, vertex_index_int[1], vertex_index_int[2]],
+                [vertex_index_int[0], vertex_index_int[1] + 1, vertex_index_int[2]],
+                [vertex_index_int[0], vertex_index_int[1], vertex_index_int[2] + 1],
+                [vertex_index_int[0] + 1, vertex_index_int[1] + 1, vertex_index_int[2]],
+                [vertex_index_int[0] + 1, vertex_index_int[1], vertex_index_int[2] + 1],
+                [vertex_index_int[0], vertex_index_int[1] + 1, vertex_index_int[2] + 1],
+                [vertex_index_int[0] + 1, vertex_index_int[1] + 1, vertex_index_int[2] + 1]
+            ])
+            
+            # get the gradient values at the point
+            surrounding_gradients = np.array([
+                projected_gradient[v[0], v[1], v[2]]
+                for v in surrounding_vertices
+            ])
+            
+            # create linear interpolation function
+            gradient = interpolate.griddata(
+                surrounding_vertices, surrounding_gradients, vertex_index_float, method="linear"
+            )[0]
+            
+            # check if there are any nan values in the gradient
+            if np.isnan(gradient).any():
+                print("warning: nan values in gradient, skipping vertex")
+                continue
+            
             vertex += gradient
-
+            
             self.mesh.vertices[i] = vertex
