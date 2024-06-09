@@ -128,6 +128,7 @@ class Mesh:
         for i, vertex in enumerate(self.mesh.vertices):
             vertex = np.array(vertex)
             
+            # TODO: this assumes the x, y, and z scales are the same when interpolating. This is not always the case
             vertex_index_float = np.array([vertex[2] / scale.z, vertex[1] / scale.xy, vertex[0] / scale.xy])
             vertex_index_int = vertex_index_float.astype(int)
             
