@@ -159,6 +159,6 @@ class Mesh:
                 print("warning: nan values in gradient, skipping vertex")
                 continue
             
-            vertex += gradient
+            vertex += gradient * 10
             
             self.mesh.vertices[i] = vertex
