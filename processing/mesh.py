@@ -138,9 +138,9 @@ class Mesh:
         vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
 
         # Create x y z points for a regular grid interpolator
-        x = np.arange(0, projected_gradient.shape[2] * scale.xy, scale.xy)
-        y = np.arange(0, projected_gradient.shape[1] * scale.xy, scale.xy)
-        z = np.arange(0, projected_gradient.shape[0] * scale.z, scale.z)
+        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2])
+        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1])
+        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0])
 
         # Interpolate the gradient values
         interp = interpolate.RegularGridInterpolator(
