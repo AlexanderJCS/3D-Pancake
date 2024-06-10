@@ -21,9 +21,6 @@ class Ui_MainFormPancake3D(object):
         MainFormPancake3D.setMinimumSize(QtCore.QSize(300, 150))
         self.verticalLayout = QtWidgets.QVBoxLayout(MainFormPancake3D)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.chk_visualize = QtWidgets.QCheckBox(MainFormPancake3D)
-        self.chk_visualize.setObjectName("chk_visualize")
-        self.verticalLayout.addWidget(self.chk_visualize)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.line_edit_c_s = QtWidgets.QLineEdit(MainFormPancake3D)
@@ -48,6 +45,9 @@ class Ui_MainFormPancake3D(object):
         self.line_edit_z_scale.setObjectName("line_edit_z_scale")
         self.horizontalLayout.addWidget(self.line_edit_z_scale)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.chk_visualize = QtWidgets.QCheckBox(MainFormPancake3D)
+        self.chk_visualize.setObjectName("chk_visualize")
+        self.verticalLayout.addWidget(self.chk_visualize)
         self.btn_process = QtWidgets.QPushButton(MainFormPancake3D)
         self.btn_process.setObjectName("btn_process")
         self.verticalLayout.addWidget(self.btn_process)
@@ -58,13 +58,13 @@ class Ui_MainFormPancake3D(object):
     def retranslateUi(self, MainFormPancake3D):
         _translate = QtCore.QCoreApplication.translate
         MainFormPancake3D.setWindowTitle(_translate("MainFormPancake3D", "3D Pancake"))
-        self.chk_visualize.setText(_translate("MainFormPancake3D", "Visualize Steps"))
         self.line_edit_c_s.setText(_translate("MainFormPancake3D", "0.67"))
         self.label_2.setText(_translate("MainFormPancake3D", "c_s (higher = more blur)"))
         self.label.setText(_translate("MainFormPancake3D", "XY Scale (nm):"))
         self.line_edit_xy_scale.setText(_translate("MainFormPancake3D", "5.03"))
         self.label_3.setText(_translate("MainFormPancake3D", "Z Scale (nm):"))
         self.line_edit_z_scale.setText(_translate("MainFormPancake3D", "42.017"))
+        self.chk_visualize.setText(_translate("MainFormPancake3D", "Visualize Steps"))
         self.btn_process.setText(_translate("MainFormPancake3D", "Process"))
 
 
