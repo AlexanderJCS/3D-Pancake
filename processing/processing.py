@@ -65,8 +65,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal], vectors=projected_gradient)
 
     # Step H: deform the mesh
-    while (err := psd_mesh.error()) > 0.1:
-        print(err)
+    while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
     if visualize or True:
