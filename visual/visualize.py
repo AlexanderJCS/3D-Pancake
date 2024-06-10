@@ -27,6 +27,7 @@ class SliceViewer:
         )
 
         self.fig.colorbar(self.im)
+        self.fig.canvas.manager.set_window_title("Slice Viewer")
 
         self._update()
 
@@ -138,15 +139,30 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
 def vis_3d(
         dist_map: np.ndarray,
         scale: data.Scale,
+        title: Optional[str] = None,
         obbs: Optional[list[obb.Obb]] = None,
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None,
         vectors: Optional[np.ndarray] = None,
         vector: Optional[list] = None,
         show_dist_map: bool = False
-):
+) -> None:
+    """
+    Visualizes the 3D data
+
+    :param dist_map: The 3D data
+    :param scale: The scale of each voxel
+    :param title: The title of the window
+    :param obbs: The oriented bounding boxes to draw
+    :param psd_mesh: The mesh to draw
+    :param center: The geometric center of the PSD
+    :param vectors: An array of 3D vectors the same size as dist_map
+    :param vector: A vector to draw at the origin
+    :param show_dist_map: If True, the distance map will be shown as a color map
+    """
+
     vis = o3d.visualization.Visualizer()
-    vis.create_window(window_name="3D Visualization")
+    vis.create_window(window_name="3D Visualization" if title is None else title)
     vis.get_render_option().mesh_show_back_face = True
     vis.get_render_option().mesh_show_wireframe = True
 
@@ -177,10 +193,8 @@ def vis_3d(
         vis.add_geometry(sphere)
 
     if vectors is not None:
-        print("vectors")
         lineset = lineset_from_vectors(vectors, scale)
         vis.add_geometry(lineset)
-        print("added lineset")
 
     if vector is not None:
         arrow = get_arrow(vector[1] * 100, vector[0], scale=1)

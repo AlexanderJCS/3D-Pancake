@@ -28,33 +28,45 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     main_obb, blob_obbs = obb.get_obbs(formatted, scale)
 
     if visualize:
-        visual.vis_3d(raw_data, scale, obbs=[main_obb] + blob_obbs, vector=[main_obb.o3d_obb.center, main_obb.get_rotation_vec()])
+        visual.vis_3d(
+            formatted, scale, "Step B: OBB",
+            obbs=[main_obb] + blob_obbs,
+            vector=[main_obb.o3d_obb.center, main_obb.get_rotation_vec()]
+        )
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, scale)
     blurred = dist.blur(distance_map, c_s, scale)
 
     if visualize:
-        visualizer = visual.SliceViewer(blurred)
+        visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
     # Step D: find the center
     center_point = center.geom_center(distance_map, scale)
 
-    if visualize:
-        visual.vis_3d(distance_map, scale, center=center_point)
-
     # Step E: create the mesh
     psd_mesh = mesh.Mesh(main_obb, center_point, scale)
 
     if visualize:
-        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+        visual.vis_3d(
+            distance_map, scale, "Step E: Mesh",
+            center=center_point,
+            obbs=[main_obb] + blob_obbs,
+            psd_mesh=psd_mesh
+        )
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(blurred, scale)
 
     if visualize:
-        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vectors=gradient)
+        visual.vis_3d(
+            distance_map, scale, "Step F: Gradient",
+            center=center_point,
+            obbs=[main_obb] + blob_obbs,
+            psd_mesh=psd_mesh,
+            vectors=gradient
+        )
 
     # Step G: project gradient onto normal
     tangent = main_obb.get_rotation_vec()
@@ -62,18 +74,37 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
     if visualize:
-        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh, vector=[main_obb.o3d_obb.center, normal], vectors=projected_gradient)
+        visual.vis_3d(
+            distance_map, scale, "Step G: Projected Gradient",
+            center=center_point,
+            obbs=[main_obb] + blob_obbs,
+            psd_mesh=psd_mesh,
+            vector=[main_obb.o3d_obb.center, normal],
+            vectors=projected_gradient
+        )
 
     # Step H: deform the mesh
-    while (err := psd_mesh.error()) > 0.1:
-        print(err)
+    while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
+
+    if visualize:
+        visual.vis_3d(
+            distance_map, scale, "Step H: Deformed Mesh",
+            center=center_point,
+            obbs=[main_obb] + blob_obbs,
+            psd_mesh=psd_mesh
+        )
 
     # Step I: move the vertices into the nearest OBB
     psd_mesh.clip_vertices(blob_obbs)
 
     if visualize or True:
-        visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
+        visual.vis_3d(
+            distance_map, scale, "Step I: Clipped Vertices",
+            center=center_point,
+            obbs=[main_obb] + blob_obbs,
+            psd_mesh=psd_mesh
+        )
 
     return psd_mesh.area()
     
