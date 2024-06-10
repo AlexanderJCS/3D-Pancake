@@ -8,9 +8,12 @@ from scipy import interpolate
 
 
 class Mesh:
+    MAX_PREV_VERTICES = 10
+
     def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
         self.bounding_box = bounding_box
         self.mesh = self._gen(bounding_box, geom_center, scale)
+        self.prev_vertices = []
 
     @staticmethod
     def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
@@ -121,9 +124,17 @@ class Mesh:
         mesh.remove_vertices_by_index(remove_vertex_indices)
 
         return mesh
-    
+
+    def _append_prev_vertices(self, vertices: np.ndarray):
+        self.prev_vertices.append(vertices.copy())
+        if len(self.prev_vertices) > self.MAX_PREV_VERTICES:
+            self.prev_vertices.pop(0)
+
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
         vertices = np.asarray(self.mesh.vertices)
+
+        self._append_prev_vertices(vertices)
+
         vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
 
         # Create x y z points for a regular grid interpolator
@@ -132,19 +143,34 @@ class Mesh:
         z = np.arange(0, projected_gradient.shape[0] * scale.z, scale.z)
 
         # Interpolate the gradient values
-        print("starting interpolation")
         interp = interpolate.RegularGridInterpolator((z, y, x), projected_gradient, bounds_error=False, fill_value=np.nan)
-        print("created interpolator")
         gradients = interp(vertices)
-        print("done")
         
-        # Check for NaN values and update vertices
+        # Create a mask to not do math on NaN values to avoid errors
         nan_mask = np.isnan(gradients).any(axis=1)
-        if nan_mask.any():
-            print("warning: nan values in gradient, skipping vertices")
-        
-        # gradients[~nan_mask] *= 10
         vertices[~nan_mask] += gradients[~nan_mask]
-        
-        # Convert vertices to open3d.utility.Vector3dVector and assign back to the mesh
         self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
+
+    def error(self) -> float:
+        """
+        Returns the euclidian error based off of the mesh's position and the previous positions. Lower means the mesh is
+        closer to its final form. Used when deforming the mesh.
+
+        :return: The euclidian error
+        """
+
+        if not self.prev_vertices:
+            return np.inf
+
+        # e = sigma(i = 1, k) ((p_i a - p_i b)) / k
+        # aka, mean euclidian distance shifted per vertex
+        max_error = 0
+
+        vertices = np.asarray(self.mesh.vertices)
+        for prev_vertices_item in self.prev_vertices:
+            error = np.mean(np.linalg.norm(vertices - prev_vertices_item, axis=1))
+
+            if error > max_error:
+                max_error = error
+
+        return max_error if max_error != 0 else np.inf
