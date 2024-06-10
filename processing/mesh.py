@@ -143,7 +143,13 @@ class Mesh:
         z = np.arange(0, projected_gradient.shape[0] * scale.z, scale.z)
 
         # Interpolate the gradient values
-        interp = interpolate.RegularGridInterpolator((z, y, x), projected_gradient, bounds_error=False, fill_value=np.nan)
+        interp = interpolate.RegularGridInterpolator(
+            (z, y, x),
+            projected_gradient,
+            bounds_error=False,
+            fill_value=np.nan
+        )
+
         gradients = interp(vertices)
         
         # Create a mask to not do math on NaN values to avoid errors
