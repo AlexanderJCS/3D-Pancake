@@ -174,3 +174,26 @@ class Mesh:
                 max_error = error
 
         return max_error if max_error != 0 else np.inf
+
+    def clip_vertices(self, obbs: list[obb.Obb]) -> None:
+        """
+        Moves the mesh to be inside the nearest oriented bounding box
+        :param obbs: The oriented bounding boxes
+        :return: None. Mutates this object
+        """
+
+        vertices = np.asarray(self.mesh.vertices)
+
+        clip_indices = []
+
+        for i, vertex in enumerate(vertices):
+            vertex: np.ndarray  # so pycharm doesn't complain
+
+            for obb_index, bounding_box in enumerate(obbs):
+                if bounding_box.contains(vertex):
+                    break
+
+            else:  # no break
+                clip_indices.append(i)
+
+        self.mesh.remove_vertices_by_index(clip_indices)

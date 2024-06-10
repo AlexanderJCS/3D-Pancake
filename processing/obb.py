@@ -23,6 +23,54 @@ class Obb:
 
         return rotation_vec / np.linalg.norm(rotation_vec)
 
+    def contains(self, point: np.ndarray) -> bool:
+        """
+        Returns whether a point is inside the OBB
+
+        :param point: The point to check
+        :return: If it is inside the OBB
+        """
+
+        return len(self.o3d_obb.get_point_indices_within_bounding_box(o3d.utility.Vector3dVector([point]))) > 0
+
+    @staticmethod
+    def _min_axis_dist(obb_points: np.ndarray, point: np.ndarray, axis: int) -> float:
+        """
+        Finds the minimum distance on the axis for a point
+        :param obb_points: The OBB points. Assumes the OBB is axis-aligned
+        :param point: The point to check
+        :param axis: The axis to check (int). e.g., x = 0, y = 1, z = 2
+        :return: The minimum distance on the axis. 0 if the point is within the OBB for the axis
+        """
+
+        # If the point is greater than the minimum value and less than the maximum value, the distance is 0
+        if obb_points[:, axis].min() <= point[axis] <= obb_points[:, axis].max():
+            return 0
+
+        # Otherwise, the distance is the minimum distance to the minimum or maximum value
+        return min(
+            abs(obb_points[:, axis].min() - point[axis]),
+            abs(obb_points[:, axis].max() - point[axis])
+        )
+
+    def dist(self, point: np.ndarray) -> float:
+        """
+        Returns the distance from the point to the OBB
+
+        :param point: The point to check
+        :return: The distance from the point to the OBB
+        """
+
+        # Rotate both the point and the OBB so that the OBB is axis-aligned
+        point_rotated = point @ self.rotation.as_matrix()
+        obb_points_rotated = self.vertices @ self.rotation.as_matrix()
+
+        x_min = self._min_axis_dist(obb_points_rotated, point_rotated, 0)
+        y_min = self._min_axis_dist(obb_points_rotated, point_rotated, 1)
+        z_min = self._min_axis_dist(obb_points_rotated, point_rotated, 2)
+
+        return np.sqrt(x_min ** 2 + y_min ** 2 + z_min ** 2)
+
 
 def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:
     """

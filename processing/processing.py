@@ -68,6 +68,9 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
+    # Step I: move the vertices into the nearest OBB
+    psd_mesh.clip_vertices(blob_obbs)
+
     if visualize or True:
         visual.vis_3d(distance_map, scale, center=center_point, obbs=[main_obb] + blob_obbs, psd_mesh=psd_mesh)
 
