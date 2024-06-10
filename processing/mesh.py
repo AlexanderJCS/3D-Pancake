@@ -197,3 +197,12 @@ class Mesh:
                 clip_indices.append(i)
 
         self.mesh.remove_vertices_by_index(clip_indices)
+
+    def area(self) -> float:
+        """
+        Gets the surface area of the mesh
+
+        :return: The surface area of the mesh
+        """
+
+        return self.mesh.get_surface_area()
