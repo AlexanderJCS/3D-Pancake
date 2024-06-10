@@ -123,60 +123,28 @@ class Mesh:
         return mesh
     
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
-        # TODO: interpolation does not take into account that the axes are scaled differently
-        # TODO: look into creating a custom interpolation function that takes in 2 points for each axis and the point
-        # to interpolate as a possible speed-up solution
-        
         vertices = np.asarray(self.mesh.vertices)
-        
-        # Convert the vertices to the vertex_index_float
-        vertex_indices_float = np.stack([
-            vertices[:, 2] / scale.z,
-            vertices[:, 1] / scale.xy,
-            vertices[:, 0] / scale.xy
-        ], axis=-1)
-        
-        # Convert the float indices to int indices for the surrounding vertices
-        vertex_indices_int = vertex_indices_float.astype(int)
-        
-        # Create all 8 surrounding vertices for each vertex
-        surrounding_offsets = np.array([
-            [0, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [1, 1, 0],
-            [1, 0, 1],
-            [0, 1, 1],
-            [1, 1, 1]
-        ])
-        
-        # Shape: (num_vertices, 8, 3)
-        surrounding_vertices = vertex_indices_int[:, np.newaxis, :] + surrounding_offsets
-        
-        # Flatten the arrays for interpolation
-        flattened_surrounding_vertices = surrounding_vertices.reshape(-1, 3)
-        flattened_surrounding_gradients = np.zeros((flattened_surrounding_vertices.shape[0], 3))
-        
-        # Fill the flattened_surrounding_gradients
-        for i in range(8):
-            flattened_surrounding_gradients[i::8, :] = projected_gradient[
-                flattened_surrounding_vertices[i::8, 0],
-                flattened_surrounding_vertices[i::8, 1],
-                flattened_surrounding_vertices[i::8, 2]
-            ]
-        
+        vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
+
+        # Create x y z points for a regular grid interpolator
+        x = np.arange(0, projected_gradient.shape[2] * scale.xy, scale.xy)
+        y = np.arange(0, projected_gradient.shape[1] * scale.xy, scale.xy)
+        z = np.arange(0, projected_gradient.shape[0] * scale.z, scale.z)
+
         # Interpolate the gradient values
-        interpolator = interpolate.LinearNDInterpolator(flattened_surrounding_vertices, flattened_surrounding_gradients)
-        gradients = interpolator(vertex_indices_float)
+        print("starting interpolation")
+        interp = interpolate.RegularGridInterpolator((z, y, x), projected_gradient, bounds_error=False, fill_value=np.nan)
+        print("created interpolator")
+        gradients = interp(vertices)
+        print("done")
         
         # Check for NaN values and update vertices
         nan_mask = np.isnan(gradients).any(axis=1)
         if nan_mask.any():
             print("warning: nan values in gradient, skipping vertices")
         
-        gradients[~nan_mask] *= 10
+        # gradients[~nan_mask] *= 10
         vertices[~nan_mask] += gradients[~nan_mask]
         
         # Convert vertices to open3d.utility.Vector3dVector and assign back to the mesh
-        self.mesh.vertices = o3d.utility.Vector3dVector(vertices)
+        self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
