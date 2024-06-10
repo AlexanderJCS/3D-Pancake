@@ -11,7 +11,7 @@ from typing import Optional
 
 class SliceViewer:
     def __init__(self, distance_map, cmap="gray", clamp_negative=True):
-        self.distance_map = distance_map
+        self.distance_map = distance_map.copy()
         if clamp_negative:
             self.distance_map[self.distance_map < 0] = 0  # clamp negative values to 0
 
@@ -22,8 +22,8 @@ class SliceViewer:
         self.im = self.ax.imshow(
             self.distance_map[self.current_slice],
             cmap=cmap,
-            vmin=distance_map.min(),
-            vmax=distance_map.max()
+            vmin=self.distance_map.min(),
+            vmax=self.distance_map.max()
         )
 
         self.fig.colorbar(self.im)
