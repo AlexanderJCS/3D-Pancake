@@ -172,6 +172,8 @@ def get_obbs(raw_data: np.ndarray, scale: data.Scale) -> tuple[Obb, list[Obb]]:
     pcds = []
     o3d_obbs = []
 
+    points = []
+
     for layer_num, z_layer in enumerate(raw_data):
         z_layer: np.ndarray  # add this type hinting so pycharm doesn't complain about nothing
 
@@ -179,6 +181,7 @@ def get_obbs(raw_data: np.ndarray, scale: data.Scale) -> tuple[Obb, list[Obb]]:
 
         for blob in blobs:
             pcd = gen_point_cloud(blob, layer_num, scale)
+            points.append(np.array(pcd.points))
             obb = o3d.geometry.OrientedBoundingBox().create_from_points(pcd.points)
 
             obb.color = np.array([1, 0, 0])  # red
@@ -186,8 +189,10 @@ def get_obbs(raw_data: np.ndarray, scale: data.Scale) -> tuple[Obb, list[Obb]]:
             pcds.append(pcd)
             o3d_obbs.append(obb)
 
+    points = np.concatenate(points, axis=0)
+
     main_o3d_obb = o3d.geometry.OrientedBoundingBox().create_from_points(
-        o3d.utility.Vector3dVector(np.argwhere(raw_data)[:, ::-1] * scale.xyz())
+        o3d.utility.Vector3dVector(points)
     )
 
     main_o3d_obb.color = np.array([0, 0, 1])  # blue
