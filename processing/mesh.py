@@ -151,10 +151,10 @@ class Mesh:
         )
 
         gradients = interp(vertices)
-        
+
         # Create a mask to not do math on NaN values to avoid errors
         nan_mask = np.isnan(gradients).any(axis=1)
-        vertices[~nan_mask] += gradients[~nan_mask]
+        vertices[~nan_mask] += gradients[~nan_mask][:, ::-1]  # TODO: figure out why this needs [:, ::-1] for some datasets only (difference is probably the long side of the obb)
         self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
 
     def error(self) -> float:
