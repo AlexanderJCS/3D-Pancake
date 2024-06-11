@@ -95,7 +95,7 @@ class Mesh:
         loop = x_range.shape[0] if min_extent_index_rotated != 0 else y_range.shape[0]
 
         # this is the one after loop, so if loop is x, then this is y, if loop is y, this is z
-        loop_next = y_range.shape[0] if min_extent_index_rotated != 1 else z_range.shape[0]
+        loop_next = y_range.shape[0] if min_extent_index_rotated != 0 else z_range.shape[0]
 
         # calculate the mesh indices
         indices = []
