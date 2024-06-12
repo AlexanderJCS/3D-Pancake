@@ -57,7 +57,6 @@ class Obb:
         dist = np.inf
 
         for vertex in self.vertices[1:]:
-
             if np.linalg.norm(vertex - v1) < dist:
                 v2 = vertex
                 dist = np.linalg.norm(vertex - v1)
