@@ -1,4 +1,4 @@
-from . import obb
+from . import bounding_box
 from . import data
 
 import open3d as o3d
@@ -10,21 +10,21 @@ from scipy import interpolate
 class Mesh:
     MAX_PREV_VERTICES = 10
 
-    def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
-        self.bounding_box = bounding_box
-        self.mesh, self.min_extent_idx_rotated = self._gen(bounding_box, geom_center, scale)
+    def __init__(self, obb: bounding_box.Obb, geom_center: np.ndarray, scale: data.Scale):
+        self.bounding_box = obb
+        self.mesh, self.min_extent_idx_rotated = self._gen(obb, geom_center, scale)
         self.prev_vertices = []
 
     @staticmethod
-    def _gen(bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
+    def _gen(obb: bounding_box.Obb, geom_center: np.ndarray, scale: data.Scale):
         # get some preliminary data
-        rotation_matrix = bounding_box.rotation.as_matrix()
-        center = bounding_box.o3d_obb.center
-        vertices = bounding_box.vertices
+        rotation_matrix = obb.rotation.as_matrix()
+        center = obb.o3d_obb.center
+        vertices = obb.vertices
 
         # rotate mesh vertices to be aligned with the axes
         vertices -= center
-        vertices = bounding_box.vertices @ rotation_matrix
+        vertices = obb.vertices @ rotation_matrix
         vertices += center
 
         # rotate geom center to be aligned with the axes
@@ -38,11 +38,11 @@ class Mesh:
 
         # starting_vertex = min_vertex but the shortest extent axis is set to the value of the geom center at that axis
         starting_vertex = min_vertex
-        min_extent_index = np.argmin(bounding_box.o3d_obb.extent)
+        min_extent_index = np.argmin(obb.o3d_obb.extent)
         starting_vertex[min_extent_index] = geom_center_rotated[min_extent_index]
 
         # opposite_vertex = starting_vertex + extent of all but the shortest axis
-        opposite_extent = np.copy(bounding_box.o3d_obb.extent)
+        opposite_extent = np.copy(obb.o3d_obb.extent)
         opposite_extent[min_extent_index] = 0
         opposite_vertex = starting_vertex + opposite_extent
 
@@ -188,28 +188,14 @@ class Mesh:
 
         return max_error if max_error != 0 else np.inf
 
-    def clip_vertices(self, obbs: list[obb.Obb]) -> None:
+    def clip_vertices(self, obbs: list[bounding_box.Obb]) -> None:
         """
         Moves the mesh to be inside the nearest oriented bounding box
         :param obbs: The oriented bounding boxes
         :return: None. Mutates this object
         """
 
-        vertices = np.asarray(self.mesh.vertices)
 
-        clip_indices = []
-
-        for i, vertex in enumerate(vertices):
-            vertex: np.ndarray  # so pycharm doesn't complain
-
-            for obb_index, bounding_box in enumerate(obbs):
-                if bounding_box.contains(vertex):
-                    break
-
-            else:  # no break
-                clip_indices.append(i)
-
-        self.mesh.remove_vertices_by_index(clip_indices)
 
     def area(self) -> float:
         """

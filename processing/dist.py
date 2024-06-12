@@ -1,10 +1,10 @@
 import numpy as np
 from scipy import ndimage
 
-from . import data
+from .data import meta
 
 
-def gen_dist_map(data: np.ndarray, scale: data.Scale) -> np.ndarray:
+def gen_dist_map(data: np.ndarray, scale: meta.Scale) -> np.ndarray:
     # add padding around data to prevent edges not counting as 0
     data = np.pad(data, 1, mode="constant")
 
@@ -24,7 +24,7 @@ def gen_dist_map(data: np.ndarray, scale: data.Scale) -> np.ndarray:
     return dist_map_positives - dist_map_negatives
 
 
-def blur(dist_map: np.ndarray, c_s: float, scale: data.Scale) -> np.ndarray:
+def blur(dist_map: np.ndarray, c_s: float, scale: meta.Scale) -> np.ndarray:
     # Sigma formula from paper
     sigma = c_s * np.max(dist_map.flatten())
 

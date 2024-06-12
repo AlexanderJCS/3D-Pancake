@@ -1,9 +1,9 @@
 import numpy as np
 
-from . import data
+from .data import meta
 
 
-def geom_center(dist_map: np.array, scale: data.Scale) -> np.ndarray:
+def geom_center(dist_map: np.array, scale: meta.Scale) -> np.ndarray:
     """
     Finds the geometric center of the PSD using a weighted average
 

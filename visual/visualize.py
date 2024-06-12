@@ -3,7 +3,7 @@ import numpy as np
 import open3d as o3d
 
 from processing import data
-from processing import obb
+from processing import bounding_box
 from processing import mesh
 
 from typing import Optional
@@ -140,7 +140,7 @@ def vis_3d(
         dist_map: np.ndarray,
         scale: data.Scale,
         title: Optional[str] = None,
-        obbs: Optional[list[obb.Obb]] = None,
+        obb: Optional[bounding_box.Obb] = None,
         psd_mesh: Optional[mesh.Mesh] = None,
         center: Optional[np.ndarray] = None,
         vectors: Optional[np.ndarray] = None,
@@ -153,7 +153,7 @@ def vis_3d(
     :param dist_map: The 3D data
     :param scale: The scale of each voxel
     :param title: The title of the window
-    :param obbs: The oriented bounding boxes to draw
+    :param obb: The oriented bounding box to draw
     :param psd_mesh: The mesh to draw
     :param center: The geometric center of the PSD
     :param vectors: An array of 3D vectors the same size as dist_map
@@ -179,9 +179,8 @@ def vis_3d(
 
     vis.add_geometry(pcd)
 
-    if obbs is not None:
-        for box in obbs:
-            vis.add_geometry(box.o3d_obb)
+    if obb is not None:
+        vis.add_geometry(obb.o3d_obb)
 
     if psd_mesh is not None:
         vis.add_geometry(psd_mesh.mesh)

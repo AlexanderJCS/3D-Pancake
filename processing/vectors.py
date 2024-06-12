@@ -1,9 +1,9 @@
 import numpy as np
 
-from . import data
+from .data import meta
 
 
-def gen_gradient(dist_map: np.ndarray, scale: data.Scale) -> np.ndarray:
+def gen_gradient(dist_map: np.ndarray, scale: meta.Scale) -> np.ndarray:
     """
     Generates the gradient of the data
 
