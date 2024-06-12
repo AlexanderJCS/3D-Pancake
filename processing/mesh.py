@@ -86,7 +86,7 @@ class Mesh:
         z_range = z_range if min_extent_index_rotated != 2 else np.array([0])
 
         # Create the [[x, y, z], ...] array
-        x, y, z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
+        x, y, z = np.meshgrid(x_range, y_range, z_range, indexing="ij")
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
         # -- Create mesh vertices --
@@ -116,9 +116,9 @@ class Mesh:
         plane_points = np.delete(plane_vertices, min_extent_index_rotated, axis=1)
         plane_values = plane_vertices[:, min_extent_index_rotated]
 
-        interpolator = interpolate.LinearNDInterpolator(plane_points, plane_values)
+        interp = interpolate.LinearNDInterpolator(plane_points, plane_values)
 
-        interp_values = interpolator(np.delete(vertices, min_extent_index_rotated, axis=1))
+        interp_values = interp(np.delete(vertices, min_extent_index_rotated, axis=1))
         vertices[:, min_extent_index_rotated] = interp_values
         mesh.vertices = o3d.utility.Vector3dVector(vertices)
 
