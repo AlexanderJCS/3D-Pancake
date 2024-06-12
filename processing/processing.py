@@ -86,7 +86,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
-    if visualize:
+    if visualize or True:
         visual.vis_3d(
             distance_map, scale, "Step H: Deformed Mesh",
             center=center_point,

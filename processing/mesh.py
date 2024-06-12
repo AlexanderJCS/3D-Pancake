@@ -134,7 +134,7 @@ class Mesh:
             self.prev_vertices.pop(0)
 
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
-        if self.min_extent_idx_rotated == 0:
+        if self.min_extent_idx_rotated in (0, 2):
             # no idea why I need to do this, but it works
             projected_gradient = projected_gradient[:, :, :, ::-1]  # flip the gradient vector
 

@@ -13,7 +13,7 @@ def run():
     with open("data/min_extent_z.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=True))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=False))
 
 
 if __name__ == "__main__":
