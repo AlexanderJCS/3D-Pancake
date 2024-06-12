@@ -12,7 +12,7 @@ class Mesh:
 
     def __init__(self, bounding_box: obb.Obb, geom_center: np.ndarray, scale: data.Scale):
         self.bounding_box = bounding_box
-        self.mesh = self._gen(bounding_box, geom_center, scale)
+        self.mesh, self.min_extent_idx_rotated = self._gen(bounding_box, geom_center, scale)
         self.prev_vertices = []
 
     @staticmethod
@@ -126,7 +126,7 @@ class Mesh:
         remove_vertex_indices = np.isnan(vertices[:, min_extent_index_rotated]).nonzero()[0]
         mesh.remove_vertices_by_index(remove_vertex_indices)
 
-        return mesh
+        return mesh, min_extent_index_rotated
 
     def _append_prev_vertices(self, vertices: np.ndarray):
         self.prev_vertices.append(vertices.copy())
@@ -134,6 +134,10 @@ class Mesh:
             self.prev_vertices.pop(0)
 
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
+        if self.min_extent_idx_rotated == 0:
+            # no idea why I need to do this, but it works
+            projected_gradient = projected_gradient[:, :, :, ::-1]  # flip the gradient vector
+
         vertices = np.asarray(self.mesh.vertices)
 
         self._append_prev_vertices(vertices)

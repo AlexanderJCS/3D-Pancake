@@ -10,10 +10,10 @@ from processing import data
 
 
 def run():
-    with open("fold_over.npy", "rb") as f:
+    with open("roi.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=True))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=False))
 
 
 if __name__ == "__main__":
