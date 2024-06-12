@@ -75,7 +75,7 @@ class MainFormPancake3D(OrsAbstractWindow):
         max_indices = roi.getLocalBoundingBoxMax(0)
         max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-        roi_arr = roi.getNDArray()
+        roi_arr = roi.getAsNDArray()
         roi_arr = roi_arr[
                   min_indices[0]:max_indices[0] + 1,
                   min_indices[1]:max_indices[1] + 1,
