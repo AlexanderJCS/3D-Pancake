@@ -13,7 +13,8 @@ def run():
     with open("data/roi.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=False))
+    # note: c_s = 0.2 provides very good results in my experience, but c_s = 0.67 is default
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), c_s=0.67, visualize=True))
 
 
 if __name__ == "__main__":
