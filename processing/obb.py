@@ -71,6 +71,27 @@ class Obb:
 
         return np.sqrt(x_min ** 2 + y_min ** 2 + z_min ** 2)
 
+    def get_normal(self) -> np.ndarray:
+        """
+        :return: The normal vector of the OBB
+        """
+
+        # Since we are working with three dimensions, it's best if we pick a vertex then give the normal direction
+        # as the vector from the original vertex to the closest vertex
+
+        v1 = self.vertices[0]
+        v2 = None
+        dist = np.inf
+
+        for vertex in self.vertices[1:]:
+
+            if np.linalg.norm(vertex - v1) < dist:
+                v2 = vertex
+                dist = np.linalg.norm(vertex - v1)
+
+        normal = v2 - v1
+        return normal / np.linalg.norm(normal)
+
 
 def flood_fill(z_layer: np.ndarray, x: int, y: int) -> np.ndarray:
     """

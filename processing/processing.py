@@ -69,8 +69,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         )
 
     # Step G: project gradient onto normal
-    tangent = main_obb.get_rotation_vec()
-    normal = np.cross(tangent, np.array([0, 0, 1]))
+    normal = main_obb.get_normal()
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
     if visualize:

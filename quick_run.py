@@ -10,10 +10,10 @@ from processing import data
 
 
 def run():
-    with open("data/roi.npy", "rb") as f:
+    with open("data/min_extent_z.npy", "rb") as f:
         roi = np.load(f)
 
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=False))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), visualize=True))
 
 
 if __name__ == "__main__":
