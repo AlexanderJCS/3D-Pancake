@@ -197,9 +197,6 @@ def vis_3d(
         vis.add_geometry(lineset)
 
     if vector is not None:
-        # set vector to be pointing in the x direction
-        vector[1] = np.array([1, 0, 0])
-
         arrow = get_arrow(vector[1] * 100, vector[0], scale=1)
         vis.add_geometry(arrow)
         vis.add_geometry(o3d.geometry.TriangleMesh().create_coordinate_frame(origin=vector[0], size=100))
