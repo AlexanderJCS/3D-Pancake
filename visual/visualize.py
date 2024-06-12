@@ -106,7 +106,7 @@ def lineset_from_vectors(vectors: np.ndarray, scale: data.Scale):
     lineset = o3d.geometry.LineSet()
     vectors_flat = vectors.reshape(-1, vectors.shape[-1])  # ::-1 to convert from zyx to xyz
 
-    vectors_flat *= 7  # scale the vectors
+    vectors_flat *= 5  # scale the vectors
 
     # create original xyz coordinates
     original_xyz = np.array([
@@ -197,6 +197,9 @@ def vis_3d(
         vis.add_geometry(lineset)
 
     if vector is not None:
+        # set vector to be pointing in the x direction
+        vector[1] = np.array([1, 0, 0])
+
         arrow = get_arrow(vector[1] * 100, vector[0], scale=1)
         vis.add_geometry(arrow)
         vis.add_geometry(o3d.geometry.TriangleMesh().create_coordinate_frame(origin=vector[0], size=100))

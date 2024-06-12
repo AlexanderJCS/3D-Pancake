@@ -90,12 +90,15 @@ class Mesh:
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
         # -- Create mesh vertices --
-        # since the x coordinate would be increasing each time (unless x = 0, then we do y)
-        # then we can find how many times it would loop over
-        loop = x_range.shape[0] if min_extent_index_rotated != 0 else y_range.shape[0]
+        # loop over the two axes that are variable
+        loop_and_loop_next = [
+            x_range.shape[0],
+            y_range.shape[0],
+            z_range.shape[0]
+        ]
 
-        # this is the one after loop, so if loop is x, then this is y, if loop is y, this is z
-        loop_next = y_range.shape[0] if min_extent_index_rotated != 0 else z_range.shape[0]
+        loop_and_loop_next.pop(min_extent_index_rotated)
+        loop, loop_next = loop_and_loop_next
 
         indices = []
         for i in range(loop - 1):
@@ -154,7 +157,7 @@ class Mesh:
 
         # Create a mask to not do math on NaN values to avoid errors
         nan_mask = np.isnan(gradients).any(axis=1)
-        vertices[~nan_mask] += gradients[~nan_mask][:, ::-1]  # TODO: figure out why this needs [:, ::-1] for some datasets only (difference is probably the long side of the obb)
+        vertices[~nan_mask] += gradients[~nan_mask]
         self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
 
     def error(self) -> float:
