@@ -188,14 +188,25 @@ class Mesh:
 
         return max_error if max_error != 0 else np.inf
 
-    def clip_vertices(self, obbs: list[bounding_box.Obb]) -> None:
+    def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale) -> None:
         """
         Moves the mesh to be inside the nearest oriented bounding box
-        :param obbs: The oriented bounding boxes
+        :param bool_data: The boolean data to clip the mesh to
+        :param scale: The scale of the data
         :return: None. Mutates this object
         """
 
+        # Algorithm: for each vertex, it must be less than 1 voxel distance away to not be clipped
 
+        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
+        vertices = np.asarray(self.mesh.vertices)
+
+        # get the distance from each vertex to the nearest point
+        distances = np.min(np.linalg.norm(vertices[:, None] - points, axis=2), axis=1)
+
+        # clip the vertices
+        indices_to_remove = np.where(distances > max(scale.xy, scale.z))[0]
+        self.mesh.remove_vertices_by_index(indices_to_remove)
 
     def area(self) -> float:
         """
