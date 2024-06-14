@@ -56,6 +56,14 @@ class VisTester:
         vis.add_geometry(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(output.points)))
         
         vis.reset_view_point(True)
+        
+        # Print the area and the ground truth
+        print("-" * 20)
+        print(f"Index: {index + 1}/{len(self.files)}")
+        print(f"File: {self.files[index]}")
+        print(f"Area: {self.output_areas[index]:.6f} μm²")
+        print(f"Ground truth: {self.ground_truths[index]:.6f} μm²")
+        print(f"Difference: {self.output_areas[index] - self.ground_truths[index]:.6f} μm²")
     
     def callback_next(self, vis: o3d.visualization.VisualizerWithKeyCallback):
         self.index += 1
