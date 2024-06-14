@@ -14,7 +14,7 @@ def run():
         roi = np.load(f)
 
     # note: c_s = 0.2 provides very good results in my experience, but c_s = 0.67 is default
-    print(processing.get_area(roi, data.Scale(5.03, 42.017), c_s=0.67, visualize=True))
+    print(processing.get_area(roi, data.Scale(5.03, 42.017), c_s=0.3, visualize=True, downsample=False))
 
 
 if __name__ == "__main__":

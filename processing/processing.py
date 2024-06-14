@@ -10,7 +10,9 @@ from . import vectors
 import visual
 
 
-def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67) -> float:
+def get_area(
+        raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False
+) -> float:
     """
     Processes the data
     
@@ -18,11 +20,15 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
     :param scale: The scale bar
     :param visualize: Whether to visualize the data
     :param c_s: The constant for the sigma formula
+    :param downsample: Whether to downsample the data to the z axis scale
     :return: Finds the surface area given the raw data
     """
 
     # Step A: load and format data
-    formatted = data.format_data(raw_data)
+    formatted = data.format_data(raw_data, downsample, scale)
+    
+    if downsample:
+        scale = data.Scale(scale.z, scale.z)
 
     # Step B: oriented bounding boxes
     obb = bounding_box.Obb(formatted, scale)
@@ -35,7 +41,7 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
         )
 
     # Step C: distance map
-    distance_map = dist.gen_dist_map(formatted, scale)
+    distance_map = dist.gen_dist_map(formatted, scale, downsample)
     blurred = dist.blur(distance_map, c_s, scale)
 
     if visualize:
@@ -53,7 +59,8 @@ def get_area(raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c
             distance_map, scale, "Step E: Mesh",
             center=center_point,
             obb=obb,
-            psd_mesh=psd_mesh
+            psd_mesh=psd_mesh,
+            show_dist_map=True
         )
 
     # Step F: calculate gradient

@@ -4,17 +4,16 @@ from scipy import ndimage
 from .data import meta
 
 
-def gen_dist_map(data: np.ndarray, scale: meta.Scale) -> np.ndarray:
+def gen_dist_map(data: np.ndarray, scale: meta.Scale, downsample: bool) -> np.ndarray:
     # add padding around data to prevent edges not counting as 0
     data = np.pad(data, 1, mode="constant")
 
-    # The PyCharm warning can be ignored -- the docs explicitly say you can pass a list/array
     dist_map_positives = ndimage.distance_transform_edt(
-        data, sampling=scale.zyx()
+        data, sampling=scale.zyx() if not downsample else None
     )
 
     dist_map_negatives = ndimage.distance_transform_edt(
-        ~data, sampling=scale.zyx()  # ~data is bitwise NOT, flipping booleans
+        ~data, sampling=scale.zyx() if not downsample else None # ~data is bitwise NOT, flipping booleans
     )
 
     # remove padding from the distance maps
