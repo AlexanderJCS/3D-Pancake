@@ -173,7 +173,7 @@ class Mesh:
         :return: The euclidian error
         """
 
-        if not self.prev_vertices:
+        if len(self.prev_vertices) < self.MAX_PREV_VERTICES:
             return np.inf
 
         # e = sigma(i = 1, k) ((p_i a - p_i b)) / k
