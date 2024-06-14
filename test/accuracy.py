@@ -9,12 +9,13 @@ from processing import processing
 from processing.data import meta
 
 
-def accuracy(filepath: str):
+def accuracy(filepath: str, c_s=0.67):
     """
     Calculates the accuracy of the algorithm.
     TODO: include other algorithms instead of just human/amira data
 
     :param filepath: The filepath to the .npy data
+    :param c_s: The constant for the sigma formula
     :return: [algorithm_area, actual_area, time_taken]
     """
 
@@ -22,7 +23,7 @@ def accuracy(filepath: str):
 
     # Calculate the algorithm's area
     start = time.time()
-    algorithm_area = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=0.67, visualize=False).area_nm
+    algorithm_area = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=c_s, visualize=False).area_nm
     algorithm_area /= 1e6  # Convert to um^2
     end = time.time()
 
@@ -36,26 +37,31 @@ def accuracy(filepath: str):
     return algorithm_area, ground_truths.get(filename), end - start
 
 
-def main():
-    table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]
+def total_accuracy(c_s=0.67):
+    """
+    Calculate the total accuracy of the algorithm
+    
+    :return: [algorithm_area_sum, actual_area_sum, abs_diff, sum_time, table_rows]
+    """
+    
     table_rows = []
-
+    
     alg_output_sum = 0
     ground_truth_sum = 0
     abs_diff = 0
     sum_time = 0
-
+    
     for file in os.listdir("../data/test"):
         if not file.endswith(".npy"):
             continue
-
-        alg_output, ground_truth, time_taken = accuracy(f"../data/test/{file}")
-
+        
+        alg_output, ground_truth, time_taken = accuracy(f"../data/test/{file}", c_s)
+        
         alg_output_sum += alg_output
         ground_truth_sum += ground_truth
         abs_diff += abs(alg_output - ground_truth)
         sum_time += time_taken
-
+        
         table_rows.append(
             [
                 os.path.basename(file),
@@ -66,6 +72,13 @@ def main():
                 f"{time_taken:.4f}s"
             ]
         )
+    
+    return alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows
+
+
+def main():
+    table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]
+    alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = total_accuracy()
     
     print(tabulate.tabulate(table_rows, headers=table_header, tablefmt="orgtbl"))
     
