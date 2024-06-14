@@ -1,3 +1,6 @@
+import copy
+from dataclasses import dataclass
+
 import numpy as np
 
 from . import data
@@ -10,9 +13,22 @@ from . import vectors
 import visual
 
 
+@dataclass(frozen=True)
+class PancakeOutput:
+    """
+    Dataclass to hold the output of the pancake processing pipeline
+    """
+    area_nm: float
+    center: np.ndarray
+    obb: bounding_box.Obb
+    psd_mesh: mesh.Mesh
+    gradient: np.ndarray
+    projected_gradient: np.ndarray
+
+
 def get_area(
         raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False
-) -> float:
+) -> PancakeOutput:
     """
     Processes the data
     
@@ -21,7 +37,7 @@ def get_area(
     :param visualize: Whether to visualize the data
     :param c_s: The constant for the sigma formula
     :param downsample: Whether to downsample the data to the z axis scale
-    :return: Finds the surface area given the raw data
+    :return: A PancakeOutput class, containing surface area and a bunch of other data
     """
 
     # Step A: load and format data
@@ -112,5 +128,12 @@ def get_area(
             psd_mesh=psd_mesh
         )
 
-    return psd_mesh.area()
+    return PancakeOutput(
+        psd_mesh.area(),
+        center_point,
+        obb,
+        psd_mesh,
+        gradient,
+        projected_gradient
+    )
     

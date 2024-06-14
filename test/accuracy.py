@@ -20,7 +20,7 @@ def accuracy(filepath: str):
     data = np.load(filepath)
 
     # Calculate the algorithm's area
-    algorithm_area = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=0.67, visualize=False)
+    algorithm_area = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=0.67, visualize=False).area_nm
     algorithm_area /= 1e6  # Convert to um^2
 
     # Find the actual area
