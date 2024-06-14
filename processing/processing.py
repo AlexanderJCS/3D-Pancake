@@ -1,4 +1,3 @@
-import copy
 from dataclasses import dataclass
 
 import numpy as np
@@ -21,13 +20,15 @@ class PancakeOutput:
     area_nm: float
     center: np.ndarray
     obb: bounding_box.Obb
+    points: np.ndarray
     psd_mesh: mesh.Mesh
     gradient: np.ndarray
     projected_gradient: np.ndarray
 
 
 def get_area(
-        raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False
+        raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False,
+        visualize_end: bool = False
 ) -> PancakeOutput:
     """
     Processes the data
@@ -109,7 +110,7 @@ def get_area(
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
-    if visualize or True:
+    if visualize or visualize_end:
         visual.vis_3d(
             distance_map, scale, "Step H: Deformed Mesh",
             center=center_point,
@@ -120,7 +121,7 @@ def get_area(
     # Step I: move the vertices into the nearest OBB
     psd_mesh.clip_vertices(formatted, scale)
 
-    if visualize or True:
+    if visualize or visualize_end:
         visual.vis_3d(
             distance_map, scale, "Step I: Clipped Vertices",
             center=center_point,
@@ -132,6 +133,7 @@ def get_area(
         psd_mesh.area(),
         center_point,
         obb,
+        np.argwhere(formatted)[:, ::-1] * scale.xyz(),
         psd_mesh,
         gradient,
         projected_gradient

@@ -14,7 +14,14 @@ def run():
         roi = np.load(f)
 
     # note: c_s = 0.2 provides very good results in my experience, but c_s = 0.67 is default
-    output = processing.get_area(roi, data.Scale(5.03, 42.017), c_s=0.3, visualize=True, downsample=False)
+    output = processing.get_area(
+        roi,
+        data.Scale(5.03, 42.017),
+        c_s=0.3,
+        visualize=True,
+        visualize_end=True,
+        downsample=False
+    )
     
     area_um = output.area_nm / 1e6
     print(f"Area: {area_um:.6f} μm²")
