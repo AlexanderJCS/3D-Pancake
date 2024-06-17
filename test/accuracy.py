@@ -113,7 +113,7 @@ def display_bar_graph(alg_output, ground_truths) -> None:
 
     for row in ground_truths:
         if not row["filename"] in files:
-            return
+            raise ValueError(f"File {row['filename']} not found in algorithm output")
 
         for key in row:
             if key == "filename" or key is None:  # no idea why key would be None, but it's happening for some reason
