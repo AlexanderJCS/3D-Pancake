@@ -5,6 +5,8 @@ import os
 import numpy as np
 import tabulate
 
+import matplotlib.pyplot as plt
+
 from processing import processing
 from processing.data import meta
 
@@ -40,8 +42,8 @@ def summary_stats(alg_output, ground_truths, compare_column_name):
     """
     Calculate the total accuracy of the algorithm
 
-    :param alg_output: Dictionary: {filename: algorithm_area}
-    :param ground_truths: A CSV object where a column contains the ground truth areas
+    :param alg_output: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
+    :param ground_truths: The output of a csv.DictReader object
     :param compare_column_name: The name of the column to compare the algorithm output to. Assumes the column is in μm²
                                 and a "filename" column exists (case-sensitive, includes file extension)
     :return: [algorithm_area_sum, actual_area_sum, abs_diff, sum_time, table_rows]
@@ -93,8 +95,47 @@ def summary_stats(alg_output, ground_truths, compare_column_name):
     return alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows
 
 
-def display_bar_graph(table_rows):
-    pass
+def display_bar_graph(alg_output, ground_truths) -> None:
+    """
+    Displays a bar graph of the algorithm's output compared to the ground truth
+
+    :param alg_output: The algorithm's output. Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
+    :param ground_truths: The output of a csv.DictReader object
+    """
+
+    files = list(alg_output.keys())
+    bar_data = {"Algorithm Area": [alg_output[file]["area"] for file in files]}
+
+    for row in ground_truths:
+        if not row["filename"] in files:
+            return
+
+        for key in row:
+            if key == "filename" or key is None:  # no idea why key would be None, but it's happening for some reason
+                continue
+
+            bar_data[key] = bar_data.get(key, [])
+            bar_data[key].append(float(row[key]))
+
+    x = np.arange(len(files))  # the label locations
+    width = 0.15  # the width of the bars
+    multiplier = 0
+
+    fig, ax = plt.subplots(layout="constrained")
+
+    for attribute, measurement in bar_data.items():
+        offset = width * multiplier
+        ax.bar(x + offset, measurement, width, label=attribute)
+        multiplier += 1
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel("Output")
+    ax.set_title("Algorithm output compared to ground truth")
+    ax.set_xticks(x + width, files)
+    plt.xticks(rotation=20)
+    ax.legend()
+
+    plt.show()
 
 
 def main():
@@ -113,6 +154,8 @@ def main():
           f"(positive = overshoot, negative = undershoot)")
     print(f"Total time: {sum_time:.4f}s")
     print(f"Average time: {sum_time / len(table_rows):.4f}s")
+
+    display_bar_graph(alg_output, ground_truths)
 
 
 if __name__ == "__main__":
