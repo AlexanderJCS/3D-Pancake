@@ -110,6 +110,9 @@ def display_bar_graph(alg_output, ground_truths) -> None:
 
     alg_output_items = list(alg_output.items())
 
+    # Code adapted from:
+    # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
+
     files = [file for file, _ in alg_output_items]
     bar_data = {"Algorithm Area": [output["area"] for _, output in alg_output_items]}
 
