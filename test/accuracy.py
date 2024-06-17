@@ -129,8 +129,8 @@ def display_bar_graph(alg_output, ground_truths) -> None:
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel("Output")
-    ax.set_title("Algorithm output compared to ground truth")
+    ax.set_ylabel("Output (μm²)")
+    ax.set_title("Algorithm Output Compared to Other Techniques")
     ax.set_xticks(x + width, files)
     plt.xticks(rotation=20)
     ax.legend()
