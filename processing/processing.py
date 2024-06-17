@@ -112,7 +112,7 @@ def get_area(
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
-    if visualize or visualize_end:
+    if visualize:
         visual.vis_3d(
             distance_map, scale, "Step H: Deformed Mesh",
             center=center_point,
@@ -121,7 +121,7 @@ def get_area(
         )
 
     # Step I: move the vertices into the nearest OBB
-    psd_mesh.clip_vertices(formatted, scale)
+    psd_mesh.clip_vertices(formatted, scale, dist_threshold)
 
     if visualize or visualize_end:
         visual.vis_3d(

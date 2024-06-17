@@ -13,14 +13,14 @@ def run():
     with open("data/roi.npy", "rb") as f:
         roi = np.load(f)
 
-    # note: c_s = 0.2 provides very good results in my experience, but c_s = 0.67 is default
+    # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default
     output = processing.get_area(
         roi,
         data.Scale(5.03, 42.017),
-        c_s=0.3,
-        visualize=True,
+        c_s=0.67,
+        visualize=False,
         visualize_end=True,
-        downsample=False
+        downsample=False,
     )
     
     area_um = output.area_nm / 1e6
