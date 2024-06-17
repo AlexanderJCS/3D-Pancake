@@ -1,6 +1,7 @@
 import time
 import csv
 import os
+from typing import Optional
 
 import numpy as np
 import tabulate
@@ -11,10 +12,12 @@ from processing import processing
 from processing.data import meta
 
 
-def algorithm_output(c_s=0.67):
+def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None):
     """
     Calculates the algorithms output.
     :param c_s: The constant for the sigma formula
+    :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
+                           equal to max(scale.xy, scale.z)
     :return: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}
     """
 
@@ -29,7 +32,9 @@ def algorithm_output(c_s=0.67):
             np.load(f"../data/test/{file}"),
             meta.Scale(5.03, 42.017),
             c_s=c_s,
-            visualize=False
+            dist_threshold=dist_threshold,
+            visualize=False,
+            visualize_end=False
         ).area_nm / 1e6
         end = time.time()
 
