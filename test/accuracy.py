@@ -1,5 +1,5 @@
-import json
 import time
+import csv
 import os
 
 import numpy as np
@@ -9,43 +9,46 @@ from processing import processing
 from processing.data import meta
 
 
-def accuracy(filepath: str, c_s=0.67):
+def algorithm_output(c_s=0.67):
     """
-    Calculates the accuracy of the algorithm.
-    TODO: include other algorithms instead of just human/amira data
-
-    :param filepath: The filepath to the .npy data
+    Calculates the algorithms output.
     :param c_s: The constant for the sigma formula
-    :return: [algorithm_area, actual_area, time_taken]
+    :return: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}
     """
 
-    data = np.load(filepath)
+    algorithm_output_dict = {}
 
-    # Calculate the algorithm's area
-    start = time.time()
-    algorithm_area = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=c_s, visualize=False).area_nm
-    algorithm_area /= 1e6  # Convert to um^2
-    end = time.time()
+    for file in os.listdir("../data/test"):
+        if not file.endswith(".npy"):
+            continue
 
-    # Find the actual area
-    with open("../data/test/areas.json", "r") as f:
-        ground_truths = json.load(f)
+        start = time.time()
+        algorithm_area = processing.get_area(
+            np.load(f"../data/test/{file}"),
+            meta.Scale(5.03, 42.017),
+            c_s=c_s,
+            visualize=False
+        ).area_nm / 1e6
+        end = time.time()
 
-    filename = os.path.basename(filepath)
-    filename = filename[:filename.rfind(".")]  # remove file extension
+        algorithm_output_dict[file] = {"area": algorithm_area, "time": end - start}
 
-    return algorithm_area, ground_truths.get(filename), end - start
+    return algorithm_output_dict
 
 
-def total_accuracy(c_s=0.67):
+def summary_stats(alg_output, ground_truths, compare_column_name):
     """
     Calculate the total accuracy of the algorithm
-    
+
+    :param alg_output: Dictionary: {filename: algorithm_area}
+    :param ground_truths: A CSV object where a column contains the ground truth areas
+    :param compare_column_name: The name of the column to compare the algorithm output to. Assumes the column is in μm²
+                                and a "filename" column exists (case-sensitive, includes file extension)
     :return: [algorithm_area_sum, actual_area_sum, abs_diff, sum_time, table_rows]
     """
-    
+
     table_rows = []
-    
+
     alg_output_sum = 0
     ground_truth_sum = 0
     abs_diff = 0
@@ -54,32 +57,54 @@ def total_accuracy(c_s=0.67):
     for file in os.listdir("../data/test"):
         if not file.endswith(".npy"):
             continue
-        
-        alg_output, ground_truth, time_taken = accuracy(f"../data/test/{file}", c_s)
-        
-        alg_output_sum += alg_output
+
+        file = os.path.basename(file)
+
+        for row_index, row in enumerate(ground_truths):
+            if row["filename"] == file:
+                break
+        else:  # no break
+            raise ValueError(f"File {file} not found in ground truth CSV")
+
+        try:
+            ground_truth = float(ground_truths[row_index][compare_column_name])
+        except ValueError:
+            raise ValueError(f"Column {compare_column_name} in CSV must contain numerical values")
+
+        alg_area = alg_output[file]["area"]
+        alg_time = alg_output[file]["time"]
+
+        alg_output_sum += alg_area
         ground_truth_sum += ground_truth
-        abs_diff += abs(alg_output - ground_truth)
-        sum_time += time_taken
+        abs_diff += abs(alg_area - ground_truth)
+        sum_time += alg_time
         
         table_rows.append(
             [
-                os.path.basename(file),
-                f"{alg_output:.6f} μm²",
+                file,
+                f"{alg_area:.6f} μm²",
                 f"{ground_truth:.6f} μm²",
-                f"{alg_output - ground_truth:.6f} μm²",
-                f"{(alg_output - ground_truth) / ground_truth * 100:.1f}%",
-                f"{time_taken:.4f}s"
+                f"{alg_area - ground_truth:.6f} μm²",
+                f"{(alg_area - ground_truth) / ground_truth * 100:.1f}%",
+                f"{alg_time:.4f}s"
             ]
         )
     
     return alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows
 
 
+def display_bar_graph(table_rows):
+    pass
+
+
 def main():
+    with open("../data/test/areas.csv", "r") as f:
+        ground_truths = list(csv.DictReader(f))
+
+    alg_output = algorithm_output()
+    alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = summary_stats(alg_output, ground_truths, "amira")
+
     table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]
-    alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = total_accuracy()
-    
     print(tabulate.tabulate(table_rows, headers=table_header, tablefmt="orgtbl"))
     
     print("\n")
