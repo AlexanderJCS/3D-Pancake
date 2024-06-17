@@ -53,8 +53,7 @@ def get_area(
     if visualize:
         visual.vis_3d(
             formatted, scale, "Step B: OBB",
-            obb=obb,
-            vector=[obb.o3d_obb.center, obb.get_rotation_vec()]
+            obb=obb
         )
 
     # Step C: distance map
