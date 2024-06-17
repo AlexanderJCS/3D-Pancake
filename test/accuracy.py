@@ -108,19 +108,27 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     :param ground_truths: The output of a csv.DictReader object
     """
 
-    files = list(alg_output.keys())
-    bar_data = {"Algorithm Area": [alg_output[file]["area"] for file in files]}
+    alg_output_items = list(alg_output.items())
 
-    for row in ground_truths:
-        if not row["filename"] in files:
-            raise ValueError(f"File {row['filename']} not found in algorithm output")
+    files = [file for file, _ in alg_output_items]
+    bar_data = {"Algorithm Area": [output["area"] for _, output in alg_output_items]}
 
-        for key in row:
-            if key == "filename" or key is None:  # no idea why key would be None, but it's happening for some reason
+    for file in files:
+        for row in ground_truths:
+            if row["filename"] != file:
                 continue
 
-            bar_data[key] = bar_data.get(key, [])
-            bar_data[key].append(float(row[key]))
+            for key in row:
+                if key == "filename" or key is None:  # no idea why key would be None, but it's happening
+                    continue
+
+                bar_data[key] = bar_data.get(key, [])
+                bar_data[key].append(float(row[key]))
+
+            break
+
+        else:  # no break, could not find file
+            raise ValueError(f"File {file} not found in ground truth CSV")
 
     x = np.arange(len(files))  # the label locations
     width = 0.15  # the width of the bars
