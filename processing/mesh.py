@@ -1,3 +1,5 @@
+from typing import Optional
+
 from . import bounding_box
 from . import data
 
@@ -189,7 +191,7 @@ class Mesh:
 
         return max_error if max_error != 0 else np.inf
 
-    def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale) -> None:
+    def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
         points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
         vertices = np.asarray(self.mesh.vertices)
 
@@ -200,7 +202,10 @@ class Mesh:
         distances, _ = tree.query(vertices, k=1)
 
         # Find vertices that need to be removed
-        indices_to_remove = np.where(distances > max(scale.xy, scale.z))[0]
+        if dist_threshold is None:
+            dist_threshold = max(scale.xy, scale.z)
+
+        indices_to_remove = np.where(distances > dist_threshold)[0]
 
         self.mesh.remove_vertices_by_index(indices_to_remove)
 
