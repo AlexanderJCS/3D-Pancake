@@ -113,6 +113,7 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     files = [file for file, _ in alg_output_items]
     bar_data = {"Algorithm Area": [output["area"] for _, output in alg_output_items]}
 
+    # TODO: clean up the following spaghetti code triple-nested loop
     for file in files:
         for row in ground_truths:
             if row["filename"] != file:
