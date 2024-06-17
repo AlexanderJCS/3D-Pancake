@@ -76,8 +76,7 @@ def get_area(
             distance_map, scale, "Step E: Mesh",
             center=center_point,
             obb=obb,
-            psd_mesh=psd_mesh,
-            show_dist_map=True
+            psd_mesh=psd_mesh
         )
 
     # Step F: calculate gradient
