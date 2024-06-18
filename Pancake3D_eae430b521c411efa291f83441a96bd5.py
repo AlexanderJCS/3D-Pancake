@@ -21,7 +21,7 @@ class Pancake3D_eae430b521c411efa291f83441a96bd5(OrsPlugin):
     # UIs
     UIDescriptors = [UIDescriptor(name="MainFormPancake3D",
                                   title="3D Pancake",
-                                  dock="Left",
+                                  dock="Floating",
                                   tab="Main",
                                   modal=False,
                                   collapsible=True,
@@ -47,7 +47,7 @@ class Pancake3D_eae430b521c411efa291f83441a96bd5(OrsPlugin):
             instance.openWidget("MainFormPancake3D")
 
     @classmethod
-    @menuItem("3D Pancake")
+    @menuItem("Plugins")
     def Pancake3D(cls):
         menu_item = Menu(title="Start 3D Pancake",
                          id_="Pancake3D_eae430b521c411efa291f83441a96bd5_1",
