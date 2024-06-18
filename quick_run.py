@@ -10,7 +10,7 @@ from processing import data
 
 
 def run():
-    with open("data/roi.npy", "rb") as f:
+    with open("data/big_hole.npy", "rb") as f:
         roi = np.load(f)
 
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default

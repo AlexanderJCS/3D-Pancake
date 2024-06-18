@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>150</height>
+    <width>350</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
-    <height>150</height>
+    <width>350</width>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,16 +29,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLineEdit" name="line_edit_c_s">
+      <widget class="QLabel" name="label_cs">
        <property name="text">
-        <string>0.67</string>
+        <string>cs (lower = tighter fit)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_2">
+      <widget class="QLineEdit" name="line_edit_c_s">
        <property name="text">
-        <string>c_s (higher = more blur)</string>
+        <string>0.67</string>
        </property>
       </widget>
      </item>
@@ -47,7 +47,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_xy_scale">
        <property name="text">
         <string>XY Scale (nm):</string>
        </property>
@@ -61,7 +61,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_z_scale">
        <property name="text">
         <string>Z Scale (nm):</string>
        </property>
@@ -84,9 +84,57 @@
     </widget>
    </item>
    <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="btn_select_multiroi">
+       <property name="text">
+        <string>Select Multiple PSDs (MultiROI)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_select_roi">
+       <property name="text">
+        <string>Select Single PSD (ROI)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_selected">
+     <property name="text">
+      <string>Selected: None</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="btn_process">
      <property name="text">
       <string>Process</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_output">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
