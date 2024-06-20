@@ -12,7 +12,7 @@ from processing import processing
 from processing.data import meta
 
 
-def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=False):
+def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsample=False, verbose=False):
     """
     Calculates the algorithms output.
     :param c_s: The constant for the sigma formula
@@ -39,6 +39,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=F
             meta.Scale(5.03, 42.017),
             c_s=c_s,
             dist_threshold=dist_threshold,
+            downsample=downsample,
             visualize=False,
             visualize_end=False
         ).area_nm / 1e6
@@ -165,7 +166,7 @@ def main():
     with open("../data/test/areas.csv", "r") as f:
         ground_truths = list(csv.DictReader(f))
 
-    alg_output = algorithm_output(verbose=True)
+    alg_output = algorithm_output(c_s=0.2, dist_threshold=80, verbose=True)
     alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = summary_stats(alg_output, ground_truths, "amira")
 
     table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]

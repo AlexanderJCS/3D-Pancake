@@ -17,7 +17,7 @@ def run():
     output = processing.get_area(
         roi,
         data.Scale(5.03, 42.017),
-        c_s=0.67,
+        c_s=0.2,
         visualize=False,
         visualize_end=True,
         downsample=False,
