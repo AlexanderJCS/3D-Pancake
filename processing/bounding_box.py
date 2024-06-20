@@ -63,3 +63,52 @@ class Obb:
 
         normal = v2 - v1
         return normal / np.linalg.norm(normal)
+
+    def expand_data(self, scale: meta.Scale, data: np.ndarray) -> np.ndarray:
+        """
+        Pads the data so the OBB does not have values outside the dataset. In addition, it offsets the vertices
+        of this OBB to adjust to the new, expanded dataset.
+
+        :param scale: The scale of the data
+        :param data: The data to expand
+        :return: The expanded data. Also mutates the vertices of this OBB
+        """
+
+        # Get the min and max of the OBB
+        min_obb_xyz = (
+            np.min(self.vertices[:, 0]),
+            np.min(self.vertices[:, 1]),
+            np.min(self.vertices[:, 2])
+        )
+
+        max_obb_xyz = (
+            np.max(self.vertices[:, 0]),
+            np.max(self.vertices[:, 1]),
+            np.max(self.vertices[:, 2])
+        )
+
+        # Get the min and max of the data
+        min_data_xyz = (0, 0, 0)
+        max_data_xyz = data.shape[::-1] * scale.xyz()
+
+        # Find the minimum amount of padding needed to have the OBB inside the data
+        min_padding = np.max([
+            abs(max_data_xyz[0] - max_obb_xyz[0]),
+            abs(max_data_xyz[1] - max_obb_xyz[1]),
+            abs(max_data_xyz[2] - max_obb_xyz[2]),
+            abs(min_data_xyz[0] - min_obb_xyz[0]),
+            abs(min_data_xyz[1] - min_obb_xyz[1]),
+            abs(min_data_xyz[2] - min_obb_xyz[2])
+        ])
+
+        # Pad the data
+        padding_voxels = int(min_padding // scale.z) + 1
+        padded_data = np.pad(data, padding_voxels, mode="constant")
+
+        translation_arr = np.array([padding_voxels * scale.xy, padding_voxels * scale.xy, padding_voxels * scale.z],
+                                   dtype=np.float64)
+
+        self.o3d_obb.translate(translation_arr, relative=True)
+        self.vertices = np.array(self.o3d_obb.get_box_points())
+
+        return padded_data
