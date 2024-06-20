@@ -12,12 +12,13 @@ from processing import processing
 from processing.data import meta
 
 
-def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None):
+def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=False):
     """
     Calculates the algorithms output.
     :param c_s: The constant for the sigma formula
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
+    :param verbose: Whether to print progress
     :return: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}
     """
 
@@ -29,7 +30,8 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None):
     ]
 
     for i, file in enumerate(files):
-        print(f"Processing file {i + 1}/{len(files)}: {file}")
+        if verbose:
+            print(f"Processing file {i + 1}/{len(files)}: {file}")
 
         start = time.time()
         algorithm_area = processing.get_area(
@@ -163,7 +165,7 @@ def main():
     with open("../data/test/areas.csv", "r") as f:
         ground_truths = list(csv.DictReader(f))
 
-    alg_output = algorithm_output()
+    alg_output = algorithm_output(verbose=True)
     alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = summary_stats(alg_output, ground_truths, "amira")
 
     table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]
