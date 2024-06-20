@@ -23,9 +23,13 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None):
 
     algorithm_output_dict = {}
 
-    for file in os.listdir("../data/test"):
-        if not file.endswith(".npy"):
-            continue
+    files = [
+        file for file in os.listdir("../data/test")
+        if file.endswith(".npy")
+    ]
+
+    for i, file in enumerate(files):
+        print(f"Processing file {i + 1}/{len(files)}: {file}")
 
         start = time.time()
         algorithm_area = processing.get_area(
