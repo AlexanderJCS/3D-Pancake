@@ -84,9 +84,9 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         roi_arr = roi.getAsNDArray()
         roi_arr = roi_arr[
-                  min_indices[0]:max_indices[0] + 1,
-                  min_indices[1]:max_indices[1] + 1,
-                  min_indices[2]:max_indices[2] + 1
+            min_indices[0]:max_indices[0] + 1,
+            min_indices[1]:max_indices[1] + 1,
+            min_indices[2]:max_indices[2] + 1
         ]
 
         # Data processing
@@ -118,24 +118,18 @@ class MainFormPancake3D(OrsAbstractWindow):
             min_indices = min_indices.astype(int)
             max_indices = max_indices.astype(int)
 
-            print(min_indices)
-            print(max_indices)
-
-            print(min_indices[0])
-            print(max_indices[0])
-            print(roi_arr[0][0][0])
-
             new_arr = roi_arr[
-                    min_indices:max_indices[0] + 1,
+                    min_indices[0]:max_indices[0] + 1,
                     min_indices[1]:max_indices[1] + 1,
                     min_indices[2]:max_indices[2] + 1
             ]
 
+            # Skip if the ROI is empty
+            if new_arr.size == 0:
+                continue
+
             print(new_arr.shape)
             print(new_arr)
-            print(new_arr.max())
-            print(new_arr.min())
-            print(new_arr.mean())
 
     @pyqtSlot()
     def on_btn_process_clicked(self):
