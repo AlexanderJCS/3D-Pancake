@@ -129,12 +129,18 @@ def display_bar_graph(alg_output, ground_truths) -> None:
             if row["filename"] != file:
                 continue
 
-            for key in row:
-                if key == "filename" or key is None:  # no idea why key would be None, but it's happening
+            for key, item in row.items():
+                if key in ("filename", "PSD num"):
                     continue
 
+                # Set item to 0 if it is not a number
+                try:
+                    item = float(item)
+                except ValueError:
+                    item = 0
+                
                 bar_data[key] = bar_data.get(key, [])
-                bar_data[key].append(float(row[key]))
+                bar_data[key].append(item)
 
             break
 
