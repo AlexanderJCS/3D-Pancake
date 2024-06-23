@@ -15,8 +15,6 @@ def format_data(data: np.ndarray, downsample: bool, scale: Optional[meta.Scale])
     """
 
     data = data.astype(bool)
-    # TODO: add padding in a better way
-    # data = np.pad(data, 30, mode="constant")
     
     if downsample:
         scale_factor_xy = int(round(scale.z / scale.xy))

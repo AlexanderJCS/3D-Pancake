@@ -133,8 +133,7 @@ class MainFormPancake3D(OrsAbstractWindow):
 
     @pyqtSlot()
     def on_btn_process_clicked(self):
-        # TODO: Add error handling for invalid scale input
-
+        # TODO: Add error handling for invalid scale input (e.g., negative values)
         if self.selected_roi is None:
             self.ui.label_output.setText("No ROI selected")
             return
