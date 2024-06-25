@@ -183,9 +183,6 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     plt.xticks(rotation=20, ha="right")
     ax.legend()
 
-    # Add a horizontal bar at y=0
-    ax.axhline(0, color="black", linewidth=0.5)
-
     plt.show()
 
 
