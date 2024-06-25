@@ -1,3 +1,4 @@
+import math
 import time
 import csv
 import os
@@ -107,7 +108,7 @@ def summary_stats(alg_output, ground_truths, compare_column_name):
     return alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows
 
 
-def display_bar_graph(alg_output, ground_truths) -> None:
+def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
     """
     Displays a bar graph of the algorithm's output compared to the ground truth
 
@@ -121,10 +122,11 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
 
     files = [file for file, _ in alg_output_items]
-    bar_data = {"Algorithm Area": [output["area"] for _, output in alg_output_items]}
+    bar_data = {}
+
+    rows_by_filename = [row["filename"] for row in ground_truths]
 
     for file in files:
-        rows_by_filename = [row["filename"] for row in ground_truths]
         row_idx = rows_by_filename.index(file)
 
         if row_idx == -1:
@@ -132,20 +134,26 @@ def display_bar_graph(alg_output, ground_truths) -> None:
 
         row = ground_truths[row_idx]
 
-        for key, item in row.items():
-            if key.lower() in ("filename", "psd num"):
+        # Add the algorithm output
+        row["Algorithm Output"] = alg_output[file]["area"]
+
+        for key, item in reversed(row.items()):  # reverse so that the algorithm output is first
+            if key.lower() in (compare_to.lower(), "filename", "psd num"):
                 continue
 
             # Set item to 0 if it is not a number
             try:
                 item = float(item)
+                comparison = float(row[compare_to])
             except ValueError:
                 item = 0
+                comparison = -1
+
+            percent_diff = (item - comparison) / comparison * 100
 
             key = key.capitalize()  # Capitalize the first letter of the key for aesthetics
-
             bar_data[key] = bar_data.get(key, [])
-            bar_data[key].append(item)
+            bar_data[key].append(percent_diff)
 
     x = np.arange(len(files))  # the label locations
     width = 0.15  # the width of the bars
@@ -159,7 +167,7 @@ def display_bar_graph(alg_output, ground_truths) -> None:
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel("Output (μm²)")
+    ax.set_ylabel(f"Comparison to {compare_to.capitalize()} (%)")
     ax.set_title("Algorithm Output Compared to Other Techniques")
 
     # Remove .npy from the file names
@@ -168,6 +176,9 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     ax.set_xticks(x + width, files)
     plt.xticks(rotation=20, ha="right")
     ax.legend()
+
+    # Add a horizontal bar at y=0
+    ax.axhline(0, color="black", linewidth=0.5)
 
     plt.show()
 
@@ -189,7 +200,7 @@ def main():
     print(f"Total time: {sum_time:.4f}s")
     print(f"Average time: {sum_time / len(table_rows):.4f}s")
 
-    display_bar_graph(alg_output, ground_truths)
+    display_bar_graph(alg_output, ground_truths, "amira")
 
 
 if __name__ == "__main__":
