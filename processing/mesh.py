@@ -21,6 +21,9 @@ class Mesh:
 
     @staticmethod
     def _gen(obb: bounding_box.Obb, geom_center: np.ndarray, scale: data.Scale):
+        # Generate the quads for the mesh based off the smallest voxel size
+        scale = data.Scale(min(scale.xy, scale.z), min(scale.xy, scale.z))
+
         # get some preliminary data
         rotation_matrix = obb.rotation.as_matrix()
         center = obb.o3d_obb.center
