@@ -1,4 +1,4 @@
-import math
+import copy
 import time
 import csv
 import os
@@ -108,13 +108,16 @@ def summary_stats(alg_output, ground_truths, compare_column_name):
     return alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows
 
 
-def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
+def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
     """
     Displays a bar graph of the algorithm's output compared to the ground truth
 
     :param alg_output: The algorithm's output. Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
     :param ground_truths: The output of a csv.DictReader object
+    :param compare_to: The column name to compare the algorithm output to
     """
+
+    ground_truths = copy.deepcopy(ground_truths)
 
     alg_output_items = list(alg_output.items())
 
@@ -152,7 +155,7 @@ def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
             if comparison == -1:
                 percent_diff = 0
             else:
-                percent_diff = (item - comparison) / comparison * 100
+                percent_diff = abs((item - comparison) / comparison * 100)
 
             key = key.capitalize()  # Capitalize the first letter of the key for aesthetics
             bar_data[key] = bar_data.get(key, [])
@@ -170,7 +173,7 @@ def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel(f"Comparison to {compare_to.capitalize()} (%)")
+    ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}")
     ax.set_title("Algorithm Output Compared to Other Techniques")
 
     # Remove .npy from the file names
@@ -186,7 +189,72 @@ def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
     plt.show()
 
 
+def display_absolute_bar_graph(alg_output, ground_truths) -> None:
+    """
+    Displays a bar graph of the algorithm's output compared to the ground truth
+
+    :param alg_output: The algorithm's output. Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
+    :param ground_truths: The output of a csv.DictReader object
+    """
+
+    alg_output_items = list(alg_output.items())
+
+    # Code adapted from:
+    # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
+
+    files = [file for file, _ in alg_output_items]
+    bar_data = {"Algorithm output": [output["area"] for _, output in alg_output_items]}
+
+    # TODO: clean up the following spaghetti code triple-nested loop
+    for file in files:
+        for row in ground_truths:
+            if row["filename"] != file:
+                continue
+
+            for key, item in row.items():
+                if key in ("filename", "PSD num"):
+                    continue
+
+                # Set item to 0 if it is not a number
+                try:
+                    item = float(item)
+                except ValueError:
+                    item = 0
+
+                key = key.capitalize()  # Capitalize the first letter of the key for aesthetics
+
+                bar_data[key] = bar_data.get(key, [])
+                bar_data[key].append(item)
+
+            break
+
+        else:  # no break, could not find file
+            raise ValueError(f"File {file} not found in ground truth CSV")
+
+    x = np.arange(len(files))  # the label locations
+    width = 0.15  # the width of the bars
+    multiplier = 0
+
+    fig, ax = plt.subplots(layout="constrained")
+
+    for attribute, measurement in bar_data.items():
+        offset = width * multiplier
+        ax.bar(x + offset, measurement, width, label=attribute)
+        multiplier += 1
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel("Output (μm²)")
+    ax.set_title("Algorithm Output Compared to Other Techniques")
+    ax.set_xticks(x + width, files)
+    plt.xticks(rotation=20, ha="right")
+    ax.legend()
+
+    plt.show()
+
+
 def main():
+    # TODO: the visualization code in this entire file is a mess
+
     with open("../data/test/areas.csv", "r") as f:
         ground_truths = list(csv.DictReader(f))
 
@@ -203,7 +271,8 @@ def main():
     print(f"Total time: {sum_time:.4f}s")
     print(f"Average time: {sum_time / len(table_rows):.4f}s")
 
-    display_bar_graph(alg_output, ground_truths, "amira")
+    display_percentage_bar_graph(alg_output, ground_truths, "amira")
+    display_absolute_bar_graph(alg_output, ground_truths)
 
 
 if __name__ == "__main__":
