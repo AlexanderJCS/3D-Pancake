@@ -149,7 +149,10 @@ def display_bar_graph(alg_output, ground_truths, compare_to: str) -> None:
                 item = 0
                 comparison = -1
 
-            percent_diff = (item - comparison) / comparison * 100
+            if comparison == -1:
+                percent_diff = 0
+            else:
+                percent_diff = (item - comparison) / comparison * 100
 
             key = key.capitalize()  # Capitalize the first letter of the key for aesthetics
             bar_data[key] = bar_data.get(key, [])
