@@ -35,7 +35,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
             print(f"Processing file {i + 1}/{len(files)}: {file}")
 
         start = time.time()
-        algorithm_area = processing.get_area(
+        output = processing.get_area(
             np.load(f"../data/test/{file}"),
             meta.Scale(5.03, 42.017),
             c_s=c_s,
@@ -43,10 +43,12 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
             downsample=downsample,
             visualize=False,
             visualize_end=False
-        ).area_nm / 1e6
+        )
         end = time.time()
 
-        algorithm_output_dict[file] = {"area": algorithm_area, "time": end - start}
+        algorithm_area = output.area_nm / 1e6
+
+        algorithm_output_dict[file] = {"area": algorithm_area, "time": end - start, "voxels": len(output.points)}
 
     return algorithm_output_dict
 
