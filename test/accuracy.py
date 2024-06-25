@@ -123,29 +123,29 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     files = [file for file, _ in alg_output_items]
     bar_data = {"Algorithm Area": [output["area"] for _, output in alg_output_items]}
 
-    # TODO: clean up the following spaghetti code triple-nested loop
     for file in files:
-        for row in ground_truths:
-            if row["filename"] != file:
+        rows_by_filename = [row["filename"] for row in ground_truths]
+        row_idx = rows_by_filename.index(file)
+
+        if row_idx == -1:
+            raise ValueError(f"File {file} not found in ground truth CSV")
+
+        row = ground_truths[row_idx]
+
+        for key, item in row.items():
+            if key.lower() in ("filename", "psd num"):
                 continue
 
-            for key, item in row.items():
-                if key in ("filename", "PSD num"):
-                    continue
+            # Set item to 0 if it is not a number
+            try:
+                item = float(item)
+            except ValueError:
+                item = 0
 
-                # Set item to 0 if it is not a number
-                try:
-                    item = float(item)
-                except ValueError:
-                    item = 0
-                
-                bar_data[key] = bar_data.get(key, [])
-                bar_data[key].append(item)
+            key = key.capitalize()  # Capitalize the first letter of the key for aesthetics
 
-            break
-
-        else:  # no break, could not find file
-            raise ValueError(f"File {file} not found in ground truth CSV")
+            bar_data[key] = bar_data.get(key, [])
+            bar_data[key].append(item)
 
     x = np.arange(len(files))  # the label locations
     width = 0.15  # the width of the bars
@@ -161,8 +161,12 @@ def display_bar_graph(alg_output, ground_truths) -> None:
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel("Output (μm²)")
     ax.set_title("Algorithm Output Compared to Other Techniques")
+
+    # Remove .npy from the file names
+    files = [file[:-len(".npy")] for file in files]
+
     ax.set_xticks(x + width, files)
-    plt.xticks(rotation=20)
+    plt.xticks(rotation=20, ha="right")
     ax.legend()
 
     plt.show()
