@@ -54,7 +54,7 @@ def get_area(
     # Step B: oriented bounding boxes
     obb = bounding_box.Obb(formatted, scale)
 
-    # Step Ba: Expand the dataset so the OBB does not have values outside of the dataset
+    # Step Ba: Expand the dataset so the OBB does not have values outside the dataset
     formatted = obb.expand_data(scale, formatted)
 
     if visualize:
