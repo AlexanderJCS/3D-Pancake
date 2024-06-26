@@ -43,7 +43,7 @@ class VisTester:
         for file in self.files:
             print("Processing", file)
             data = np.load(f"../data/test/{file}")
-            output = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=0.67, visualize=False, downsample=False)
+            output = processing.get_area(data, meta.Scale(5.03, 42.017), c_s=0.2, visualize=False, downsample=False)
             outputs.append(output)
         
         return outputs
