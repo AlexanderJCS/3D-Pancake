@@ -22,11 +22,11 @@ def tif_to_npy(tif_path: str, output_path: str) -> None:
 
 
 def main():
-    tif_to_npy("../data/binary_tifs/11/PSD01.tif", "../data/test/10as100n1.npy")
-    tif_to_npy("../data/binary_tifs/11/PSD05.tif", "../data/test/10as111n2.npy")
-    tif_to_npy("../data/binary_tifs/11/PSD04.tif", "../data/test/10as071n3.npy")
-    tif_to_npy("../data/binary_tifs/11/PSD02.tif", "../data/test/10as086n4.npy")
-    tif_to_npy("../data/binary_tifs/11/PSD03.tif", "../data/test/10as065n5.npy")
+    tif_to_npy("../data/binary_tifs/10/PSD01.tif", "../data/test/10as100n1.npy")
+    tif_to_npy("../data/binary_tifs/10/PSD05.tif", "../data/test/10as111n2.npy")
+    tif_to_npy("../data/binary_tifs/10/PSD04.tif", "../data/test/10as071n3.npy")
+    tif_to_npy("../data/binary_tifs/10/PSD02.tif", "../data/test/10as086n4.npy")
+    tif_to_npy("../data/binary_tifs/10/PSD03.tif", "../data/test/10as065n5.npy")
 
     tif_to_npy("../data/binary_tifs/23/PSD04.tif", "../data/test/23as020p1.npy")
     tif_to_npy("../data/binary_tifs/23/PSD02.tif", "../data/test/23as076p2.npy")
