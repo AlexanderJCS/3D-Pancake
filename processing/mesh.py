@@ -160,7 +160,8 @@ class Mesh:
             (z, y, x),
             projected_gradient,
             bounds_error=False,
-            fill_value=np.nan
+            fill_value=np.nan,
+            method="linear"
         )
 
     def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
