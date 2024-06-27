@@ -49,15 +49,19 @@ def plot_times_vs_voxels(name, times, num_voxels) -> None:
     ax.plot(x_values, y_values, color="black")
 
     # Display the correlation statistics
-    ax.text(0.05, 0.925, f'R² = {r_value**2:.2f}', transform=ax.transAxes, fontsize=12)
-    ax.text(0.05, 0.875, f'P = {p_value:.4f}', transform=ax.transAxes, fontsize=12)
-    ax.text(0.05, 0.825, f'y = {slope:.2f}x + {intercept:.2f}', transform=ax.transAxes, fontsize=12)
+    ax.text(0.05, 0.925, f'R² = {r_value**2:.2f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
+    ax.text(0.05, 0.875, f'P = {p_value:.4f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
+    ax.text(0.05, 0.825, f'y = {slope:.6f}x + {intercept:.2f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
 
-    ax.set_xlabel("Number of Voxels")
-    ax.set_ylabel("Time (s)")
-    ax.set_title("Runtime vs Number of Voxels")
+    ax.set_xlabel("Number of Voxels", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_ylabel("Time (s)", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_title("Runtime vs Number of Voxels", fontname="Calibri", fontsize=18, fontweight="bold")
 
-    plt.legend()
+    for label in ax.get_yticklabels() + ax.get_xticklabels():
+        label.set_fontname("Calibri")
+        label.set_fontsize(16)
+
+    plt.legend(prop={"family": "Calibri", "size": 14})
     plt.show()
 
 
