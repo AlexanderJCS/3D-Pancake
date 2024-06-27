@@ -175,15 +175,20 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}")
-    ax.set_title("Algorithm Output Compared to Other Techniques")
+    ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_title("Algorithm Output Compared to Amira", fontname="Calibri", fontsize=18, fontweight="bold")
 
     # Remove .npy from the file names
     files = [file[:-len(".npy")] for file in files]
 
-    ax.set_xticks(x + width, files)
+    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=16)
+
+    for label in ax.get_yticklabels():
+        label.set_fontname("Calibri")
+        label.set_fontsize(16)
+
     plt.xticks(rotation=20, ha="right")
-    ax.legend()
+    ax.legend(prop={"family": "Calibri", "size": 16})
 
     plt.show()
 
@@ -242,20 +247,20 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=14, fontweight="bold")
-    ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=18, fontweight="bold")
 
     # Remove .npy from the file names
     files = [file[:-len(".npy")] for file in files]
 
-    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=14)
+    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=16)
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
-        label.set_fontsize(14)
+        label.set_fontsize(16)
 
     plt.xticks(rotation=20, ha="right")
-    ax.legend(prop={"family": "Calibri", "size": 14, "weight": "bold"})
+    ax.legend(prop={"family": "Calibri", "size": 16})
 
     plt.show()
 
