@@ -244,6 +244,10 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=14, fontweight="bold")
     ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=16, fontweight="bold")
+
+    # Remove .npy from the file names
+    files = [file[:-len(".npy")] for file in files]
+
     ax.set_xticks(x + width, files, fontname="Calibri", fontsize=14)
 
     for label in ax.get_yticklabels():
@@ -251,7 +255,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
         label.set_fontsize(14)
 
     plt.xticks(rotation=20, ha="right")
-    ax.legend(prop={'family': 'Calibri', 'size': 14, 'weight': 'bold'})
+    ax.legend(prop={"family": "Calibri", "size": 14, "weight": "bold"})
 
     plt.show()
 
