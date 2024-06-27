@@ -12,9 +12,6 @@ class Obb:
         self.vertices = np.array(self.o3d_obb.get_box_points())
         self.rotation = Rotation.from_matrix(np.array(self.o3d_obb.R))
 
-        # set o3d_obb color to blue for visualization
-        self.o3d_obb.color = (0, 0, 1)
-
     @staticmethod
     def _gen(bool_data: np.ndarray, scale: meta.Scale) -> o3d.geometry.OrientedBoundingBox:
         """

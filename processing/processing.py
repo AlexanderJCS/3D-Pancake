@@ -129,7 +129,6 @@ def get_area(
     if visualize or visualize_end:
         visual.vis_3d(
             distance_map, scale, "Step I: Clipped Vertices",
-            center=center_point,
             obb=obb,
             psd_mesh=psd_mesh
         )
