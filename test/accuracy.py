@@ -242,11 +242,16 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel("Output (μm²)")
-    ax.set_title("Algorithm Output Compared to Other Techniques")
-    ax.set_xticks(x + width, files)
+    ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=14, fontweight="bold")
+    ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=16, fontweight="bold")
+    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=14)
+
+    for label in ax.get_yticklabels():
+        label.set_fontname("Calibri")
+        label.set_fontsize(14)
+
     plt.xticks(rotation=20, ha="right")
-    ax.legend()
+    ax.legend(prop={'family': 'Calibri', 'size': 14, 'weight': 'bold'})
 
     plt.show()
 
