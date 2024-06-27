@@ -169,6 +169,11 @@ def vis_3d(
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(np.argwhere(dist_map > (-np.inf if show_dist_map else 0)).astype(float)[:, ::-1] * scale.xyz())
 
+    # Set the mesh color, OBB color, point cloud color, and set the background to black
+    obb.o3d_obb.color = (1, 0, 0)
+    # psd_mesh.mesh.paint_uniform_color((0.6, 0.6, 0.6))
+    pcd.paint_uniform_color((0.92, 0.56, 0.2))
+
     # get colors
     if show_dist_map:
         colors = dist_map.flatten()
