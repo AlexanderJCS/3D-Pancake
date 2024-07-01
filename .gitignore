@@ -1,7 +1,7 @@
 .idea
 .vscode
 ScreenCapture_*.png
-ScreenCapture_*.json
+ScreenCamera_*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
