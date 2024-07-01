@@ -1,16 +1,30 @@
 import numpy as np
 
 
-def string_to_color(input_string: str):
+COLORS_MAP = {
+    "algorithm output": "xkcd:cornflower blue",
+    "amira": "xkcd:orange",
+    "convex hull / 2": "xkcd:fresh green",
+    "marching cubes / 2": "#D7E52C",  # like a vibrant yellow but not too bright
+    "espina": "xkcd:light eggplant",
+}
+
+
+def str_to_rgb(input_string: str):
     """
     Convert a string to a random RGB color. Importantly, the same string will always return the same color.
     Used for consistent coloring of objects based on their name.
 
-    :param input_string: The string to convert to a color
-    :return: The RGB color as 3-element a numpy array
+    Some colors are pre-defined for specific strings, accessible in the COLORS_MAP dictionary.
+
+    :param input_string: The string to convert to a color.
+    :return: A color recognizable by matplotlib
     """
 
-    hash_value = hash(input_string)
-    np.random.seed(hash_value)
+    if input_string.lower() in COLORS_MAP:
+        return COLORS_MAP[input_string.lower()]
 
-    return np.random.randint(0, 256, 3)
+    hash_value = hash(input_string)
+    np.random.seed(hash_value % 2**32)
+
+    return tuple(np.concatenate((np.random.rand(3), np.array([1]))))

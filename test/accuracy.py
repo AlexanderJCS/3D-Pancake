@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 from processing import processing
 from processing.data import meta
 
+from visual import figure_utils
+
 
 def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsample=False, verbose=False):
     """
@@ -19,6 +21,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
     :param c_s: The constant for the sigma formula
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
+    :param downsample: Whether to downsample the data to the z axis scale
     :param verbose: Whether to print progress
     :return: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}
     """
@@ -139,10 +142,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
 
         row = ground_truths[row_idx]
 
-        # Add the algorithm output
-        row["Algorithm Output"] = alg_output[file]["area"]
-
-        for key, item in reversed(row.items()):  # reverse so that the algorithm output is first
+        for key, item in [("Algorithm Output", alg_output[file]["area"])] + list(row.items()):
             if key.lower() in (compare_to.lower(), "filename", "psd num"):
                 continue
 
@@ -171,7 +171,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
-        ax.bar(x + offset, measurement, width, label=attribute)
+        ax.bar(x + offset, measurement, width, label=attribute, color=figure_utils.str_to_rgb(attribute))
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
@@ -243,7 +243,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
-        ax.bar(x + offset, measurement, width, label=attribute)
+        ax.bar(x + offset, measurement, width, label=attribute, color=figure_utils.str_to_rgb(attribute))
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
