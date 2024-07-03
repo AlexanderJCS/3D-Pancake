@@ -3,10 +3,10 @@ import numpy as np
 
 COLORS_MAP = {
     "algorithm output": "xkcd:cornflower blue",
-    "amira": "xkcd:orange",
-    "convex hull / 2": "xkcd:fresh green",
+    "amira": "xkcd:pale orange",
+    "convex hull / 2": "#52A55D",  # green
     "marching cubes / 2": "#D7E52C",  # a vibrant yellow but not too bright
-    "lindblad / 2": "red",
+    "lindblad / 2": "xkcd:pinkish red",
     "espina": "xkcd:light eggplant",
 }
 
