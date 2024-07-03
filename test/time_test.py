@@ -4,6 +4,8 @@ from scipy import stats
 
 import accuracy
 
+import csv
+
 
 def plot_times(name, times) -> None:
     """
@@ -31,6 +33,7 @@ def plot_times_vs_voxels(name, times, num_voxels) -> None:
     """
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(8.71, 6.6)
 
     # Create a color map
     colors = plt.cm.rainbow(np.linspace(0, 1, len(name)))
@@ -49,7 +52,7 @@ def plot_times_vs_voxels(name, times, num_voxels) -> None:
     ax.plot(x_values, y_values, color="black")
 
     # Display the correlation statistics
-    ax.text(0.05, 0.925, f'R² = {r_value**2:.2f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
+    ax.text(0.05, 0.925, f'r = {r_value:.2f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
     ax.text(0.05, 0.875, f'P = {p_value:.4f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
     ax.text(0.05, 0.825, f'y = {slope:.6f}x + {intercept:.2f}', transform=ax.transAxes, fontsize=16, fontname="Calibri")
 
@@ -68,10 +71,24 @@ def plot_times_vs_voxels(name, times, num_voxels) -> None:
 def main():
     alg_table = accuracy.algorithm_output(c_s=0.2, verbose=True)
     times = [output["time"] for output in alg_table.values()]
-    names = [file[:-len(".npy")] for file in alg_table]
+
+    with open("../data/test/areas.csv", "r") as f:
+        ground_truths = list(csv.DictReader(f))
+
+    filename_name_map = {row["filename"]: row["PSD name"] for row in ground_truths}
+    names = [filename_name_map[file] for file in alg_table.keys()]
+
     num_voxels = [output["voxels"] for output in alg_table.values()]
 
     plot_times(names, times)
+
+    # Reorder the points so names are in numerical order
+    sort_by = [int(name.split()[-1]) for name in names]
+
+    times = [time for _, time in sorted(zip(sort_by, times))]
+    num_voxels = [voxels for _, voxels in sorted(zip(sort_by, num_voxels))]
+    names = [name for _, name in sorted(zip(sort_by, names))]
+
     plot_times_vs_voxels(names, times, num_voxels)
 
 

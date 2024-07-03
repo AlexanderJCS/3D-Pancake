@@ -133,6 +133,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     bar_data = {}
 
     rows_by_filename = [row["filename"] for row in ground_truths]
+    names_by_row = [row["PSD name"] for row in ground_truths]
 
     for file in files:
         row_idx = rows_by_filename.index(file)
@@ -143,7 +144,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
         row = ground_truths[row_idx]
 
         for key, item in [("Algorithm Output", alg_output[file]["area"])] + list(row.items()):
-            if key.lower() in (compare_to.lower(), "filename", "psd num"):
+            if key.lower() in (compare_to.lower(), "filename", "psd num", "psd name"):
                 continue
 
             # Set item to 0 if it is not a number
@@ -164,10 +165,11 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
             bar_data[key].append(percent_diff)
 
     x = np.arange(len(files))  # the label locations
-    width = 0.15  # the width of the bars
+    width = 0.125  # the width of the bars
     multiplier = 0
 
     fig, ax = plt.subplots(layout="constrained")
+    fig.set_size_inches(9.75, 4.84)
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
@@ -178,16 +180,12 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}", fontname="Calibri", fontsize=16, fontweight="bold")
     ax.set_title("Algorithm Output Compared to Amira", fontname="Calibri", fontsize=18, fontweight="bold")
 
-    # Remove .npy from the file names
-    files = [file[:-len(".npy")] for file in files]
-
-    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=16)
+    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=16)
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
         label.set_fontsize(16)
 
-    plt.xticks(rotation=20, ha="right")
     ax.legend(prop={"family": "Calibri", "size": 16})
 
     plt.show()
@@ -208,6 +206,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
 
     files = [file for file, _ in alg_output_items]
     bar_data = {"Algorithm output": [output["area"] for _, output in alg_output_items]}
+    names_by_row = [row["PSD name"] for row in ground_truths]
 
     # TODO: clean up the following spaghetti code triple-nested loop
     for file in files:
@@ -216,7 +215,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
                 continue
 
             for key, item in row.items():
-                if key in ("filename", "PSD num"):
+                if key in ("filename", "PSD num", "PSD name"):
                     continue
 
                 # Set item to 0 if it is not a number
@@ -236,10 +235,11 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
             raise ValueError(f"File {file} not found in ground truth CSV")
 
     x = np.arange(len(files))  # the label locations
-    width = 0.15  # the width of the bars
+    width = 0.125  # the width of the bars
     multiplier = 0
 
     fig, ax = plt.subplots(layout="constrained")
+    fig.set_size_inches(9.75, 4.84)
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
@@ -250,23 +250,19 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=16, fontweight="bold")
     ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=18, fontweight="bold")
 
-    # Remove .npy from the file names
-    files = [file[:-len(".npy")] for file in files]
-
-    ax.set_xticks(x + width, files, fontname="Calibri", fontsize=16)
+    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=16)
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
         label.set_fontsize(16)
 
-    plt.xticks(rotation=20, ha="right")
     ax.legend(prop={"family": "Calibri", "size": 16})
 
     plt.show()
 
 
 def main():
-    # TODO: the visualization code in this entire file is a mess
+    # TODO: the visualization code in this entire file
 
     with open("../data/test/areas.csv", "r") as f:
         ground_truths = list(csv.DictReader(f))
