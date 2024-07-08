@@ -135,12 +135,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     rows_by_filename = [row["filename"] for row in ground_truths]
     names_by_row = [row["PSD name"] for row in ground_truths]
 
-    for file in files:
-        row_idx = rows_by_filename.index(file)
-
-        if row_idx == -1:
-            raise ValueError(f"File {file} not found in ground truth CSV")
-
+    for row_idx, file in enumerate(rows_by_filename):
         row = ground_truths[row_idx]
 
         for key, item in [("Algorithm Output", alg_output[file]["area"])] + list(row.items()):
