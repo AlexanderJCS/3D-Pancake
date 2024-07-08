@@ -132,10 +132,10 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     files = [file for file, _ in alg_output_items]
     bar_data = {}
 
-    rows_by_filename = [row["filename"] for row in ground_truths]
+    filename_by_row = [row["filename"] for row in ground_truths]
     names_by_row = [row["PSD name"] for row in ground_truths]
 
-    for row_idx, file in enumerate(rows_by_filename):
+    for row_idx, file in enumerate(filename_by_row):
         row = ground_truths[row_idx]
 
         for key, item in [("Algorithm Output", alg_output[file]["area"])] + list(row.items()):
@@ -194,14 +194,20 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     :param ground_truths: The output of a csv.DictReader object
     """
 
+    ground_truths = copy.deepcopy(ground_truths)
+    ground_truths.sort(key=lambda row: row["filename"])  # sort ground truth rows by filename
+    names_by_row = [row["PSD name"] for row in ground_truths]
+
     alg_output_items = list(alg_output.items())
+
+    # Sort alg_output_items and names_by_row
+    names_by_row, alg_output_items = zip(*sorted(zip(names_by_row, alg_output_items)))
 
     # Code adapted from:
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
 
     files = [file for file, _ in alg_output_items]
     bar_data = {"Algorithm output": [output["area"] for _, output in alg_output_items]}
-    names_by_row = [row["PSD name"] for row in ground_truths]
 
     # TODO: clean up the following spaghetti code triple-nested loop
     for file in files:
