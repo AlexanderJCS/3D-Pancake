@@ -164,7 +164,7 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     multiplier = 0
 
     fig, ax = plt.subplots(layout="constrained")
-    fig.set_size_inches(9.75, 4.84)
+    fig.set_size_inches(9.75, 5.5)
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
@@ -172,14 +172,14 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}", fontname="Calibri", fontsize=16, fontweight="bold")
-    ax.set_title("Algorithm Output Compared to Amira", fontname="Calibri", fontsize=18, fontweight="bold")
+    ax.set_ylabel(f"Absolute % difference to {compare_to.capitalize()}", fontname="Calibri", fontsize=18, fontweight="bold")
+    ax.set_title("Algorithm Output Compared to Amira", fontname="Calibri", fontsize=22, fontweight="bold", pad=10)
 
-    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=16)
+    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=18)
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
-        label.set_fontsize(16)
+        label.set_fontsize(18)
 
     ax.legend(prop={"family": "Calibri", "size": 16})
 
@@ -240,7 +240,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     multiplier = 0
 
     fig, ax = plt.subplots(layout="constrained")
-    fig.set_size_inches(9.75, 4.84)
+    fig.set_size_inches(9.75, 5.5)
 
     for attribute, measurement in bar_data.items():
         offset = width * multiplier
@@ -249,13 +249,13 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel("Output (μm²)", fontname="Calibri", fontsize=16, fontweight="bold")
-    ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=18, fontweight="bold")
+    ax.set_title("Algorithm Output Compared to Other Techniques", fontname="Calibri", fontsize=22, fontweight="bold", pad=10)
 
-    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=16)
+    ax.set_xticks(x + width, names_by_row, fontname="Calibri", fontsize=18)
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
-        label.set_fontsize(16)
+        label.set_fontsize(18)
 
     ax.legend(prop={"family": "Calibri", "size": 16})
 
