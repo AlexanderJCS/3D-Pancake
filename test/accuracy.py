@@ -8,7 +8,6 @@ import numpy as np
 import tabulate
 
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
 import seaborn as sns
 import pandas as pd
 
@@ -275,7 +274,10 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
 
     files = [file for file, _ in alg_output_items]
-    bar_data = {"Algorithm output": [output["area"] for _, output in alg_output_items]}
+    bar_data = {
+        "Amira": [],  # put the first algorithm name before this algorithm. This is kind of hacky, since it assumes the first algorithm's name is amira, but whatever
+        "Algorithm output": [output["area"] for _, output in alg_output_items]
+    }
 
     # TODO: clean up the following spaghetti code triple-nested loop
     for file in files:
