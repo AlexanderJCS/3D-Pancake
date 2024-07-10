@@ -237,8 +237,15 @@ def display_percent_box_plot(alg_output, ground_truths, compare_to) -> None:
 
     df = pd.DataFrame(df_data)
 
+    palette = {
+        key: figure_utils.str_to_rgb(key) for key in algorithms.keys()
+    }
+
     sns.swarmplot(data=df, x="Algorithm", y="Percent Difference", ax=ax, color="black", alpha=0.75)
-    sns.boxplot(data=df, x="Algorithm", y="Percent Difference", ax=ax, color="#6a6ead", showfliers=False)
+    sns.boxplot(
+        data=df, x="Algorithm", y="Percent Difference", hue="Algorithm", ax=ax, palette=palette,
+        showfliers=False, legend=False
+    )
 
     for label in ax.get_yticklabels():
         label.set_fontname("Calibri")
