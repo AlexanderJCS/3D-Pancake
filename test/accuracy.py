@@ -8,6 +8,9 @@ import numpy as np
 import tabulate
 
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+import seaborn as sns
+import pandas as pd
 
 from processing import processing
 from processing.data import meta
@@ -186,6 +189,71 @@ def display_percentage_bar_graph(alg_output, ground_truths, compare_to: str) -> 
     plt.show()
 
 
+def display_percent_box_plot(alg_output, ground_truths, compare_to) -> None:
+    """
+    Displays a box plot of each algorithm's performance (percent difference) compared to the ground truth
+
+    :param alg_output: The algorithm's output. Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
+    :param ground_truths: The output of a csv.DictReader object
+    :param compare_to: The column name to compare the algorithm
+    """
+
+    ground_truths = copy.deepcopy(ground_truths)
+
+    algorithms = {}
+
+    for row in ground_truths:
+        pancake_output = alg_output.get(row["filename"])
+
+        if pancake_output is None:
+            print(f"Warning: could not find algorithm output for file {row['filename']}")
+            continue
+
+        for key, item in [("Algorithm", pancake_output["area"])] + list(row.items()):
+            if key in (compare_to, "filename", "PSD num", "PSD name"):
+                continue
+
+            # Skip item if it is not a number
+            if isinstance(item, str) and not item.replace(".", "", 1).isdigit():
+                continue
+
+            item = float(item)
+            percent_diff = abs((item - float(row[compare_to])) / float(row[compare_to]) * 100)
+
+            key = key.capitalize()
+            algorithms[key] = algorithms.get(key, [])
+            algorithms[key].append(percent_diff)
+
+    fig, ax = plt.subplots()
+    fig.set_size_inches(9.75, 5.5)
+    ax.set_title("Algorithm Performance Compared to Amira", fontname="Calibri", fontsize=22, fontweight="bold", pad=10)
+    ax.set_ylabel("Absolute % Difference to Amira", fontname="Calibri", fontsize=18, fontweight="bold")
+
+    df_data = {"Algorithm": [], "Percent Difference": []}
+
+    for key, value in algorithms.items():
+        for i in range(len(value)):
+            df_data["Algorithm"].append(key)
+            df_data["Percent Difference"].append(value[i])
+
+    df = pd.DataFrame(df_data)
+
+    sns.swarmplot(data=df, x="Algorithm", y="Percent Difference", ax=ax, color="black", alpha=0.75)
+    sns.boxplot(data=df, x="Algorithm", y="Percent Difference", ax=ax, color="#6a6ead", showfliers=False)
+
+    for label in ax.get_yticklabels():
+        label.set_fontname("Calibri")
+        label.set_fontsize(18)
+
+    for label in ax.get_xticklabels():
+        label.set_fontname("Calibri")
+        label.set_fontsize(16)
+
+    ax.set_xlabel("Algorithms", fontname="Calibri", fontsize=18, fontweight="bold")
+
+    plt.show()
+
+
 def display_absolute_bar_graph(alg_output, ground_truths) -> None:
     """
     Displays a bar graph of the algorithm's output compared to the ground truth
@@ -282,6 +350,7 @@ def main():
     print(f"Average time: {sum_time / len(table_rows):.4f}s")
 
     display_percentage_bar_graph(alg_output, ground_truths, "amira")
+    display_percent_box_plot(alg_output, ground_truths, "amira")
     display_absolute_bar_graph(alg_output, ground_truths)
 
 
