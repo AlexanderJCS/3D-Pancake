@@ -253,12 +253,13 @@ def display_percent_box_plot(alg_output, ground_truths, compare_to) -> None:
     plt.show()
 
 
-def display_absolute_bar_graph(alg_output, ground_truths) -> None:
+def display_absolute_bar_graph(alg_output, ground_truths, compare_to) -> None:
     """
     Displays a bar graph of the algorithm's output compared to the ground truth
 
     :param alg_output: The algorithm's output. Dictionary: {filename: {"area": algorithm_area, "time": time_taken}}
     :param ground_truths: The output of a csv.DictReader object
+    :param compare_to: The column name to compare the algorithm output to
     """
 
     ground_truths = copy.deepcopy(ground_truths)
@@ -275,7 +276,7 @@ def display_absolute_bar_graph(alg_output, ground_truths) -> None:
 
     files = [file for file, _ in alg_output_items]
     bar_data = {
-        "Amira": [],  # put the first algorithm name before this algorithm. This is kind of hacky, since it assumes the first algorithm's name is amira, but whatever
+        compare_to: [],  # put the first algorithm name before this algorithm
         "Algorithm output": [output["area"] for _, output in alg_output_items]
     }
 
@@ -353,7 +354,7 @@ def main():
 
     display_percentage_bar_graph(alg_output, ground_truths, "amira")
     display_percent_box_plot(alg_output, ground_truths, "amira")
-    display_absolute_bar_graph(alg_output, ground_truths)
+    display_absolute_bar_graph(alg_output, ground_truths, "Amira")
 
 
 if __name__ == "__main__":
