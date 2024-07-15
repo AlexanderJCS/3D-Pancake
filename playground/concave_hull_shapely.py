@@ -8,15 +8,6 @@ from processing.data import meta
 scale = meta.Scale(5.03, 42.017)
 
 
-def generate_edges(vertices):
-    edges = []
-
-    for i in range(0, len(vertices), 3):
-        edges.append((i, i + 1, i + 2))
-
-    return edges
-
-
 def get_data():
     with open("../data/test/10as065n5.npy", "rb") as f:
         roi = np.load(f)
