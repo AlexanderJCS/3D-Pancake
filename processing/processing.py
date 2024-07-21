@@ -29,7 +29,7 @@ class PancakeOutput:
 
 def get_area(
         raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False,
-        visualize_end: bool = False, visualize_unclipped: bool = True, dist_threshold: Optional[float] = None
+        visualize_end: bool = False, visualize_unclipped: bool = False, dist_threshold: Optional[float] = None
 ) -> PancakeOutput:
     """
     Processes the data
