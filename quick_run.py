@@ -5,12 +5,12 @@ and is only for development.
 """
 
 import numpy as np
-from processing import processing
-from processing import data
+from .processing import processing
+from .processing import data
 
 
 def run():
-    with open("data/test/23as076p2.npy", "rb") as f:
+    with open("data/test/10as065n5.npy", "rb") as f:
         roi = np.load(f)
 
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default

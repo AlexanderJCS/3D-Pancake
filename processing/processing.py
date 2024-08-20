@@ -10,7 +10,7 @@ from . import center
 from . import mesh
 from . import vectors
 
-import visual
+from .. import visual
 
 
 @dataclass(frozen=True)

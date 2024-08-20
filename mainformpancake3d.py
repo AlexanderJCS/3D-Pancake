@@ -13,8 +13,8 @@ from .ui_mainformpancake3d import Ui_MainFormPancake3D
 from typing import Optional
 from typing import Union
 
-from processing import processing
-from processing import data
+from .processing import processing
+from .processing import data
 import numpy as np
 
 
