@@ -19,6 +19,7 @@ def run():
         data.Scale(5.03, 42.017),
         c_s=0.2,
         visualize=True,
+        visualize_unclipped=True,
         visualize_end=True,
         downsample=False,
     )

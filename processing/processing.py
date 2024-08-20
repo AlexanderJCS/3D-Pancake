@@ -29,7 +29,7 @@ class PancakeOutput:
 
 def get_area(
         raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False,
-        visualize_end: bool = False, dist_threshold: Optional[float] = None
+        visualize_end: bool = False, visualize_unclipped: bool = False, dist_threshold: Optional[float] = None
 ) -> PancakeOutput:
     """
     Processes the data
@@ -39,6 +39,7 @@ def get_area(
     :param visualize: Whether to visualize the data
     :param c_s: The constant for the sigma formula
     :param downsample: Whether to downsample the data to the z axis scale
+    :param visualize_unclipped: Whether to visualize the second to last step
     :param visualize_end: Whether to visualize the final result
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
@@ -115,7 +116,7 @@ def get_area(
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
-    if visualize:
+    if visualize or visualize_unclipped:
         visual.vis_3d(
             distance_map, scale, "Step H: Deformed Mesh",
             center=center_point,
