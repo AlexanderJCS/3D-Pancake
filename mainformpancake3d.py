@@ -94,9 +94,11 @@ class MainFormPancake3D(OrsAbstractWindow):
         terminated = 0
 
         for thread in self.threads:
-            if thread.isRunning():
-                terminated += 1
+            try:
                 thread.terminate()  # this may cause unclosed resources in the thread, but it's the best option I see
+                terminated += 1
+            except RuntimeError:  # the thread is already deleted
+                pass
 
         self.threads.clear()
 
@@ -105,7 +107,9 @@ class MainFormPancake3D(OrsAbstractWindow):
     @pyqtSlot()
     def on_btn_force_stop_clicked(self):
         threads_terminated = self.clear_threads()
-        self.ui.label_output.setText("Force stopped" if threads_terminated > 0 else "No workers to stop")
+        self.ui.label_output.setText(
+            f"Force stopped {threads_terminated} worker{'s' if threads_terminated != 1 else ''}"
+        )
 
     @pyqtSlot()
     def on_btn_process_clicked(self):
