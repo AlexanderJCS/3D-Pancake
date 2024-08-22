@@ -22,8 +22,6 @@ class MainFormPancake3D(OrsAbstractWindow):
         super().__init__(implementation, parent)
 
         self.threadpool = QThreadPool()
-        self.threads = []  # used to terminate all existing threads before creating a new one to avoid the same
-        #  process running several times. Also makes the "process" button a "force restart" button for previous threads.
         print(f"Multithreading with max {self.threadpool.maxThreadCount()} threads")
 
         self.ui = Ui_MainFormPancake3D()
@@ -84,33 +82,6 @@ class MainFormPancake3D(OrsAbstractWindow):
     def on_btn_select_multiroi_clicked(self):
         self.select_roi(MultiROI)
 
-    def clear_threads(self) -> int:
-        """
-        Force terminates all threads in the threadpool. Allows for there to be a "force stop" button.
-
-        :returns The number of terminated threads
-        """
-
-        terminated = 0
-
-        for thread in self.threads:
-            try:
-                thread.terminate()  # this may cause unclosed resources in the thread, but it's the best option I see
-                terminated += 1
-            except RuntimeError:  # the thread is already deleted
-                pass
-
-        self.threads.clear()
-
-        return terminated
-
-    @pyqtSlot()
-    def on_btn_force_stop_clicked(self):
-        threads_terminated = self.clear_threads()
-        self.ui.label_output.setText(
-            f"Force stopped {threads_terminated} worker{'s' if threads_terminated != 1 else ''}"
-        )
-
     @pyqtSlot()
     def on_btn_process_clicked(self):
         # TODO: Add error handling for invalid scale input (e.g., negative values)
@@ -126,6 +97,4 @@ class MainFormPancake3D(OrsAbstractWindow):
             self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s, self.ui.label_output
         )
 
-
         self.threadpool.start(worker)
-        self.threads.append(worker)
