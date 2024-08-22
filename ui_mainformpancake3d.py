@@ -65,6 +65,9 @@ class Ui_MainFormPancake3D(object):
         self.btn_process = QtWidgets.QPushButton(MainFormPancake3D)
         self.btn_process.setObjectName("btn_process")
         self.verticalLayout.addWidget(self.btn_process)
+        self.btn_force_stop = QtWidgets.QPushButton(MainFormPancake3D)
+        self.btn_force_stop.setObjectName("btn_force_stop")
+        self.verticalLayout.addWidget(self.btn_force_stop)
         self.label_output = QtWidgets.QLabel(MainFormPancake3D)
         self.label_output.setText("")
         self.label_output.setObjectName("label_output")
@@ -87,6 +90,7 @@ class Ui_MainFormPancake3D(object):
         self.btn_select_roi.setText(_translate("MainFormPancake3D", "Select Single PSD (ROI)"))
         self.label_selected.setText(_translate("MainFormPancake3D", "Selected: None"))
         self.btn_process.setText(_translate("MainFormPancake3D", "Process"))
+        self.btn_force_stop.setText(_translate("MainFormPancake3D", "Force Stop"))
 
 
 if __name__ == "__main__":

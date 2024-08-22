@@ -132,6 +132,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="btn_force_stop">
+     <property name="text">
+      <string>Force Stop</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_output">
      <property name="text">
       <string/>
