@@ -89,6 +89,10 @@ class MainFormPancake3D(OrsAbstractWindow):
         xy_scale = float(self.ui.line_edit_xy_scale.text())
         z_scale = float(self.ui.line_edit_z_scale.text())
 
+        if xy_scale == 0 or z_scale == 0:
+            self.ui.label_output.setText("Scale must be nonzero")
+            return
+
         c_s = float(self.ui.line_edit_c_s.text())
 
         visualize = self.ui.chk_visualize.isChecked()
