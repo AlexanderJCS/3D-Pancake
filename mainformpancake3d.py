@@ -21,9 +21,6 @@ class MainFormPancake3D(OrsAbstractWindow):
     def __init__(self, implementation, parent=None):
         super().__init__(implementation, parent)
 
-        self.threadpool = QThreadPool()
-        print(f"Multithreading with max {self.threadpool.maxThreadCount()} threads")
-
         self.ui = Ui_MainFormPancake3D()
         self.ui.setupUi(self)
 
@@ -71,7 +68,6 @@ class MainFormPancake3D(OrsAbstractWindow):
 
     @pyqtSlot(str)
     def update_output_label(self, text: str):
-        print(f"found emission: {text}")
         self.ui.label_output.setText(text)
 
     @pyqtSlot()
@@ -97,8 +93,9 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         visualize = self.ui.chk_visualize.isChecked()
 
-        worker = pancake_worker.PancakeWorker(
-            self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s, self.ui.label_output
-        )
+        worker = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s)
+        worker.update_output_label.connect(self.update_output_label)
+        worker.start()
 
-        self.threadpool.start(worker)
+    def update_label_output(self, text: str):
+        self.ui.label_output.setText(text)

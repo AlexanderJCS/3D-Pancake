@@ -132,7 +132,10 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_output">
+    <widget class="CopyableLabel" name="label_output">
+     <property name="cursor">
+      <cursorShape>IBeamCursor</cursorShape>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -140,6 +143,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CopyableLabel</class>
+   <extends>QLineEdit</extends>
+   <header>copyable_label</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

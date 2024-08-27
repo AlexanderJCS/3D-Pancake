@@ -1,5 +1,4 @@
-from PyQt6.QtCore import QRunnable, QObject, pyqtSlot
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtCore import QThread, pyqtSlot, pyqtSignal
 
 from .processing import data
 from typing import Union
@@ -10,13 +9,15 @@ import numpy as np
 from .processing import processing
 
 
-class PancakeWorker(QRunnable, QObject):
+class PancakeWorker(QThread):
     """
     The Pancake Worker class. Allows the surface area to be processed in the background.
     """
 
+    update_output_label = pyqtSignal(str)
+
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
-                 scale: data.Scale, visualize: bool, c_s: float, output_label: QLabel):
+                 scale: data.Scale, visualize: bool, c_s: float):
         """
         Initializes the Pancake Worker.
 
@@ -32,7 +33,6 @@ class PancakeWorker(QRunnable, QObject):
         self._scale = scale
         self._visualize = visualize
         self._c_s = c_s
-        self._output_label = output_label
 
     def process_single_roi(self):
         self._selected_roi: ors.ROI  # we can assume it's an ROI if this code is being run
@@ -58,7 +58,7 @@ class PancakeWorker(QRunnable, QObject):
         )
 
         area_um = output.area_nm / 1e6
-        self._output_label.setText(f"Area: {area_um:.6f} μm²")
+        self.update_output_label.emit(f"Area: {area_um:.6f} μm²")
 
     def process_multi_roi(self):
         self._selected_roi: ors.MultiROI  # we can assume it's a MultiROI if this code is being run
@@ -96,16 +96,16 @@ class PancakeWorker(QRunnable, QObject):
             print(new_arr.shape)
             print(np.max(new_arr))
 
-        self._output_label.setText("Done")
+        self.update_output_label.emit("Done")
 
     @pyqtSlot()
-    def run(self):
+    def start(self):
         try:
             if self._selected_roi is None:
-                self._output_label.setText("No ROI selected")
+                self.update_output_label.emit("No ROI selected")
                 return
 
-            self._output_label.setText("Processing...")
+            self.update_output_label.emit("Processing...")
 
             if isinstance(self._selected_roi, ors.ROI):
                 self.process_single_roi()
@@ -113,5 +113,5 @@ class PancakeWorker(QRunnable, QObject):
                 self.process_multi_roi()
 
         except Exception as e:
-            self._output_label.setText(f"Error: {e}")
+            self.update_output_label.emit(f"Error: {e}")
             raise e
