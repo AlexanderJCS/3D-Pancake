@@ -88,7 +88,7 @@ class Ui_MainFormPancake3D(object):
         self.btn_select_roi.setText(_translate("MainFormPancake3D", "Select Single PSD (ROI)"))
         self.label_selected.setText(_translate("MainFormPancake3D", "Selected: None"))
         self.btn_process.setText(_translate("MainFormPancake3D", "Process"))
-from copyable_label import CopyableLabel
+from .copyable_label import CopyableLabel
 
 
 if __name__ == "__main__":

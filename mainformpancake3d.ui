@@ -147,7 +147,7 @@
   <customwidget>
    <class>CopyableLabel</class>
    <extends>QLineEdit</extends>
-   <header>copyable_label</header>
+   <header>.copyable_label</header>
   </customwidget>
  </customwidgets>
  <resources/>
