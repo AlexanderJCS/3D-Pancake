@@ -1,3 +1,5 @@
+import copy
+
 import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
@@ -160,6 +162,13 @@ def vis_3d(
     :param vector: A vector to draw at the origin
     :param show_dist_map: If True, the distance map will be shown as a color map
     """
+
+    dist_map = np.copy(dist_map)
+    scale = copy.deepcopy(scale)
+    obb = copy.deepcopy(obb) if obb is not None else None
+    psd_mesh = copy.deepcopy(psd_mesh) if psd_mesh is not None else None
+    center = np.copy(center) if center is not None else None
+    vectors = np.copy(vectors) if vectors is not None else None
 
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="3D Visualization" if title is None else title)
