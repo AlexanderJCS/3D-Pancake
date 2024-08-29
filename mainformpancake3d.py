@@ -1,6 +1,6 @@
 from ORSModel import orsObj, ROI, MultiROI
 from ORSServiceClass.ORSWidget.chooseObjectAndNewName.chooseObjectAndNewName import ChooseObjectAndNewName
-from PyQt6.QtCore import pyqtSlot, Qt, QThreadPool
+from PyQt6.QtCore import pyqtSlot, Qt, QThreadPool, QThread
 from PyQt6 import QtGui
 
 from OrsLibraries.workingcontext import WorkingContext
@@ -36,6 +36,8 @@ class MainFormPancake3D(OrsAbstractWindow):
         )
 
         self.selected_roi: Union[ROI, MultiROI, None] = None
+
+        self.worker_thread = None
 
     @staticmethod
     def roi_dialog(managed_class: Union[type[ROI], type[MultiROI]] = ROI) -> Optional:
@@ -93,9 +95,9 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         visualize = self.ui.chk_visualize.isChecked()
 
-        worker = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s)
-        worker.update_output_label.connect(self.update_output_label)
-        worker.start()
+        self.worker_thread = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s)
+        self.worker_thread.update_output_label.connect(self.update_output_label)
+        self.worker_thread.start()
 
     def update_label_output(self, text: str):
         self.ui.label_output.setText(text)

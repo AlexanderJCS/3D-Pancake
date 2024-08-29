@@ -1,6 +1,6 @@
 import functools
 
-from PyQt6.QtCore import QThread, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSlot, pyqtSignal, QObject
 
 from .processing import data
 from typing import Union
@@ -93,8 +93,7 @@ class PancakeWorker(QThread):
 
         self.update_output_label.emit("Done")
 
-    @pyqtSlot()
-    def start(self):
+    def run(self):
         try:
             if self._selected_roi is None:
                 self.update_output_label.emit("No ROI selected")
