@@ -1,6 +1,6 @@
 import functools
 
-from PyQt6.QtCore import QThread, pyqtSlot, pyqtSignal, QObject
+from PyQt6.QtCore import QThread, pyqtSignal
 
 from .processing import data
 from typing import Union

@@ -1,6 +1,6 @@
 from ORSModel import orsObj, ROI, MultiROI
 from ORSServiceClass.ORSWidget.chooseObjectAndNewName.chooseObjectAndNewName import ChooseObjectAndNewName
-from PyQt6.QtCore import pyqtSlot, Qt, QThreadPool, QThread
+from PyQt6.QtCore import pyqtSlot, Qt
 from PyQt6 import QtGui
 
 from OrsLibraries.workingcontext import WorkingContext
