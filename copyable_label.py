@@ -6,7 +6,6 @@ class CopyableLabel(QLineEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        print("hi there hello initialized")
         self.setReadOnly(True)  # Make it read-only
         self.setFrame(False)  # Remove the border to make it look like a label
         self.setStyleSheet("background: transparent;")  # Transparent background to mimic QLabel
