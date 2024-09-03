@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from typing import Optional
 
@@ -29,7 +30,8 @@ class PancakeOutput:
 
 def get_area(
         raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False,
-        visualize_end: bool = False, visualize_unclipped: bool = False, dist_threshold: Optional[float] = None
+        visualize_end: bool = False, visualize_unclipped: bool = False, dist_threshold: Optional[float] = None,
+        visualize_signal=None
 ) -> PancakeOutput:
     """
     Processes the data
@@ -59,18 +61,26 @@ def get_area(
     formatted = obb.expand_data(scale, formatted)
 
     if visualize:
-        visual.vis_3d(
-            formatted, scale, "Step B: OBB",
-            obb=obb
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                formatted, scale, "Step A: Formatted Data",
+                obb=obb
+            ))
+        else:
+            visual.vis_3d(
+                formatted, scale, "Step B: OBB",
+                obb=obb
+            )
 
     # Step C: distance map
     distance_map = dist.gen_dist_map(formatted, scale, downsample)
     blurred = dist.blur(distance_map, c_s, scale)
 
     if visualize:
-        visualizer = visual.SliceViewer(distance_map)
-        visualizer.visualize()
+        if not visualize_signal:  # don't show in the signal since matplotlib doesn't play well with PyQt
+            visualizer = visual.SliceViewer(distance_map)
+            visualizer.visualize()
 
     # Step D: find the center
     center_point = center.geom_center(distance_map, scale)
@@ -79,60 +89,107 @@ def get_area(
     psd_mesh = mesh.Mesh(obb, center_point, scale)
 
     if visualize:
-        visual.vis_3d(
-            distance_map, scale, "Step E: Mesh",
-            center=center_point,
-            obb=obb,
-            psd_mesh=psd_mesh
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                distance_map, scale, "Step E: Mesh",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh
+            ))
+        else:
+            visual.vis_3d(
+                distance_map, scale, "Step E: Mesh",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh
+            )
 
     # Step F: calculate gradient
     gradient = vectors.gen_gradient(blurred, scale)
 
     if visualize:
-        visual.vis_3d(
-            distance_map, scale, "Step F: Gradient",
-            center=center_point,
-            obb=obb,
-            psd_mesh=psd_mesh,
-            vectors=gradient
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                distance_map, scale, "Step F: Gradient",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh,
+                vectors=gradient
+            ))
+        else:
+            visual.vis_3d(
+                distance_map, scale, "Step F: Gradient",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh,
+                vectors=gradient
+            )
 
     # Step G: project gradient onto normal
     normal = obb.get_normal()
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
     if visualize:
-        visual.vis_3d(
-            distance_map, scale, "Step G: Projected Gradient",
-            center=center_point,
-            obb=obb,
-            psd_mesh=psd_mesh,
-            vector=[obb.o3d_obb.center, normal],
-            vectors=projected_gradient
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                distance_map, scale, "Step G: Projected Gradient",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh,
+                vector=[obb.o3d_obb.center, normal],
+                vectors=projected_gradient
+            ))
+        else:
+            visual.vis_3d(
+                distance_map, scale, "Step G: Projected Gradient",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh,
+                vector=[obb.o3d_obb.center, normal],
+                vectors=projected_gradient
+            )
 
     # Step H: deform the mesh
     while psd_mesh.error() > 0.1:
         psd_mesh.deform(projected_gradient, scale)
 
     if visualize or visualize_unclipped:
-        visual.vis_3d(
-            distance_map, scale, "Step H: Deformed Mesh",
-            center=center_point,
-            obb=obb,
-            psd_mesh=psd_mesh
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                distance_map, scale, "Step H: Deformed Mesh",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh
+            ))
+        else:
+            visual.vis_3d(
+                distance_map, scale, "Step H: Deformed Mesh",
+                center=center_point,
+                obb=obb,
+                psd_mesh=psd_mesh
+            )
 
     # Step I: move the vertices into the nearest OBB
     psd_mesh.clip_vertices(formatted, scale, dist_threshold)
 
     if visualize or visualize_end:
-        visual.vis_3d(
-            distance_map, scale, "Step I: Clipped Vertices",
-            obb=obb,
-            psd_mesh=psd_mesh
-        )
+        if visualize_signal:
+            visualize_signal.emit(functools.partial(
+                visual.vis_3d,
+                distance_map, scale, "Step I: Clipped Vertices",
+                obb=obb,
+                psd_mesh=psd_mesh
+            ))
+        else:
+            visual.vis_3d(
+                distance_map, scale, "Step I: Clipped Vertices",
+                obb=obb,
+                psd_mesh=psd_mesh
+            )
 
     return PancakeOutput(
         psd_mesh.area(),

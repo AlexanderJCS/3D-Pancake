@@ -12,10 +12,11 @@ from .ui_mainformpancake3d import Ui_MainFormPancake3D
 
 from typing import Optional
 from typing import Union
+import threading
+import os
 
 from .processing import data
 from . import pancake_worker
-import os
 
 
 class MainFormPancake3D(OrsAbstractWindow):
@@ -48,6 +49,8 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         self.selected_filepath_dir: str = ""
         self.selected_filepath_name: str = ""
+
+        self.visualization_lock = threading.Lock()
 
     @staticmethod
     def roi_dialog(managed_class: Union[type[ROI], type[MultiROI]] = ROI) -> Optional:
@@ -90,6 +93,9 @@ class MainFormPancake3D(OrsAbstractWindow):
     def on_btn_select_multiroi_clicked(self):
         self.select_roi(MultiROI)
 
+    def visualize_signal(self, function):
+        function()
+
     @pyqtSlot()
     def on_btn_process_clicked(self):
         # TODO: Add error handling for invalid scale input (e.g., negative values)
@@ -103,10 +109,12 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         c_s = float(self.ui.line_edit_c_s.text())
 
-        visualize = self.ui.chk_visualize_results.isChecked()
+        visualize_steps = self.ui.chk_visualize_steps.isChecked()
+        visualize_results = self.ui.chk_visualize_results.isChecked()
 
-        self.worker_thread = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s)
+        self.worker_thread = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s)
         self.worker_thread.update_output_label.connect(self.update_output_label)
+        self.worker_thread.show_visualization.connect(self.visualize_signal)
         self.worker_thread.start()
 
     def refresh_file_path(self):
