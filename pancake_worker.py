@@ -2,6 +2,7 @@ import functools
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
+import csv_output
 from .processing import data
 from typing import Union
 
@@ -55,13 +56,15 @@ class PancakeWorker(QThread):
     show_visualization = pyqtSignal(functools.partial)
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
-                 scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float):
+                 scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
+                 output_filepath: str):
         """
         Initializes the Pancake Worker.
 
         :param selected_roi: The ROI or MultiROI to process. If none, the worker will not run.
         :param scale: The scale of the data
-        :param visualize: Whether to visualize each step
+        :param visualize_steps: Whether to visualize each step
+        :param visualize_results: Whether to visualize the final result
         :param c_s: The c_s value. How tight a fit the surface is to the data.
         """
         global global_vis_signal
@@ -73,13 +76,26 @@ class PancakeWorker(QThread):
         self._visualize_steps = visualize_steps
         self._visualize_results = visualize_results
         self._c_s = c_s
+        self._output_filepath = output_filepath
 
         global_vis_signal = self.show_visualization
 
     def process_single_roi(self):
         output = process_single_roi_worker(self._selected_roi, self._scale, self._visualize_steps,
                                            self._visualize_results, self._c_s)
-        self.update_output_label.emit(output)
+        self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
+
+        if self._output_filepath == "":
+            return
+
+        labels = [self._selected_roi.getTitle()]
+        outputs = [output]
+
+        try:
+            csv_output.write_csv(self._output_filepath, labels, outputs)
+        except (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError):
+            self.update_output_label.emit("Error writing to file. Check the filepath.")
+            return
 
     def process_multi_roi(
             self, multi_roi: ors.MultiROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float
@@ -88,10 +104,14 @@ class PancakeWorker(QThread):
 
         single_rois: list[ors.ROI] = []
 
-        for label_index in range(1, self._selected_roi.getLabelCount() + 1):
+        labels = []
+
+        for label in range(1, self._selected_roi.getLabelCount() + 1):
+            labels.append(str(label))
+
             copy_roi = ors.ROI()
             copy_roi.copyShapeFromStructuredGrid(multi_roi)
-            multi_roi.addToVolumeROI(copy_roi, label_index)
+            multi_roi.addToVolumeROI(copy_roi, label)
 
             single_rois.append(copy_roi)
 
@@ -105,7 +125,16 @@ class PancakeWorker(QThread):
 
         with mp.Pool() as pool:
             self.update_output_label.emit("Processing...")
-            result = pool.map(partial_func, single_rois)
+            outputs = pool.map(partial_func, single_rois)
+
+        if not self._output_filepath == "":
+            self.update_output_label.emit("Writing to CSV...")
+
+            try:
+                csv_output.write_csv(self._output_filepath, labels, outputs)
+            except (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError):
+                self.update_output_label.emit("Error writing to file. Check the filepath.")
+                return
 
         self.update_output_label.emit("Done")
 

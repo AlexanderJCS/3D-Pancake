@@ -93,6 +93,7 @@ class MainFormPancake3D(OrsAbstractWindow):
     def on_btn_select_multiroi_clicked(self):
         self.select_roi(MultiROI)
 
+    @staticmethod
     def visualize_signal(self, function):
         function()
 
@@ -112,7 +113,11 @@ class MainFormPancake3D(OrsAbstractWindow):
         visualize_steps = self.ui.chk_visualize_steps.isChecked()
         visualize_results = self.ui.chk_visualize_results.isChecked()
 
-        self.worker_thread = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s)
+        output_filepath = self.ui.line_edit_filepath.text()
+
+        self.worker_thread = pancake_worker.PancakeWorker(
+            self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s, output_filepath
+        )
         self.worker_thread.update_output_label.connect(self.update_output_label)
         self.worker_thread.show_visualization.connect(self.visualize_signal)
         self.worker_thread.start()
