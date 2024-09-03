@@ -1,7 +1,8 @@
 from ORSModel import orsObj, ROI, MultiROI
 from ORSServiceClass.ORSWidget.chooseObjectAndNewName.chooseObjectAndNewName import ChooseObjectAndNewName
-from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6.QtCore import pyqtSlot, Qt, QRegularExpression
 from PyQt6 import QtGui
+from PyQt6.QtWidgets import QFileDialog
 
 from OrsLibraries.workingcontext import WorkingContext
 from ORSServiceClass.windowclasses.orsabstractwindow import OrsAbstractWindow
@@ -14,6 +15,7 @@ from typing import Union
 
 from .processing import data
 from . import pancake_worker
+import os
 
 
 class MainFormPancake3D(OrsAbstractWindow):
@@ -23,6 +25,11 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         self.ui = Ui_MainFormPancake3D()
         self.ui.setupUi(self)
+
+        self.ui.line_edit_file.setValidator(QtGui.QRegularExpressionValidator(QRegularExpression(r"^[\w\-. ]+$")))
+        self.ui.line_edit_file.textChanged.connect(self.on_line_edit_file_textChanged)
+
+        self.ui.chk_visualize_steps.stateChanged.connect(self.on_chk_visualize_steps_stateChanged)
 
         self.ui.line_edit_c_s.setValidator(QtGui.QDoubleValidator(0, 100, 6))
         self.ui.line_edit_xy_scale.setValidator(QtGui.QDoubleValidator(0, 10000, 6))
@@ -38,6 +45,9 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.selected_roi: Union[ROI, MultiROI, None] = None
 
         self.worker_thread = None
+
+        self.selected_filepath_dir: str = ""
+        self.selected_filepath_name: str = ""
 
     @staticmethod
     def roi_dialog(managed_class: Union[type[ROI], type[MultiROI]] = ROI) -> Optional:
@@ -93,11 +103,40 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         c_s = float(self.ui.line_edit_c_s.text())
 
-        visualize = self.ui.chk_visualize.isChecked()
+        visualize = self.ui.chk_visualize_results.isChecked()
 
         self.worker_thread = pancake_worker.PancakeWorker(self.selected_roi, data.Scale(xy_scale, z_scale), visualize, c_s)
         self.worker_thread.update_output_label.connect(self.update_output_label)
         self.worker_thread.start()
+
+    def refresh_file_path(self):
+        self.ui.line_edit_filepath.setText(
+            os.path.join(self.selected_filepath_dir, f"{self.selected_filepath_name}.csv").replace("\\", "/")
+        )
+
+    @pyqtSlot()
+    def on_chk_visualize_steps_stateChanged(self):
+        if self.ui.chk_visualize_steps.isChecked():
+            self.ui.chk_visualize_results.setChecked(True)
+            self.ui.chk_visualize_results.setEnabled(False)
+        else:
+            self.ui.chk_visualize_results.setEnabled(True)
+            self.ui.chk_visualize_results.setChecked(False)
+
+    @pyqtSlot()
+    def on_btn_file_select_clicked(self):
+        dialog = QFileDialog(self)
+        # make dialog only accept folders
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.selected_filepath_dir = dialog.selectedFiles()[0]
+            self.refresh_file_path()
+
+    @pyqtSlot()
+    def on_line_edit_file_textChanged(self):
+        self.selected_filepath_name = self.ui.line_edit_file.text()
+        self.refresh_file_path()
 
     def update_label_output(self, text: str):
         self.ui.label_output.setText(text)

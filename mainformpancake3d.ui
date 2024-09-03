@@ -27,6 +27,19 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Parameters</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_cs">
@@ -77,27 +90,79 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="chk_visualize">
+    <layout class="QHBoxLayout" name="horizontalLayout_6"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chk_visualize_steps">
      <property name="text">
       <string>Visualize Steps</string>
      </property>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QCheckBox" name="chk_visualize_results">
+     <property name="text">
+      <string>Visualize Results</string>
      </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <bold>true</bold>
+      </font>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
+     <property name="text">
+      <string>Output</string>
      </property>
-    </spacer>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLineEdit" name="line_edit_file">
+       <property name="placeholderText">
+        <string>CSV File Name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_file_select">
+       <property name="toolTip">
+        <string>Select Folder</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>folder_icon.png</normaloff>folder_icon.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="line_edit_filepath">
+     <property name="placeholderText">
+      <string>Output Filepath</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Input</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
