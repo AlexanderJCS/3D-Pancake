@@ -43,9 +43,7 @@ def process_single_roi_worker(
         visualize_signal=global_vis_signal
     )
 
-    area_um = output.area_nm / 1e6
-
-    return f"Area: {area_um:.6f} μm²"
+    return output.area_nm / 1e6  # area in um^2
 
 
 class PancakeWorker(QThread):
