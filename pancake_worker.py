@@ -22,17 +22,21 @@ global_vis_signal = None
 def process_single_roi_worker(
         roi: ors.ROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float
 ):
+    roi_arr = roi.getAsNDArray()
+
+    if roi_arr.shape == (0,):
+        return -1
+
     min_indices = roi.getLocalBoundingBoxMin(0)
     min_indices = np.array([min_indices.getX(), min_indices.getY(), min_indices.getZ()], dtype=int)[::-1]
     max_indices = roi.getLocalBoundingBoxMax(0)
     max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-    roi_arr = roi.getAsNDArray()
     roi_arr = roi_arr[
-              min_indices[0]:max_indices[0] + 1,
-              min_indices[1]:max_indices[1] + 1,
-              min_indices[2]:max_indices[2] + 1
-              ]
+        min_indices[0]:max_indices[0] + 1,
+        min_indices[1]:max_indices[1] + 1,
+        min_indices[2]:max_indices[2] + 1
+    ]
 
     # Data processing
     output = processing.get_area(
