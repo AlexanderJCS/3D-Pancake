@@ -94,7 +94,7 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.select_roi(MultiROI)
 
     @staticmethod
-    def visualize_signal(self, function):
+    def visualize_signal(function):
         function()
 
     @pyqtSlot()
