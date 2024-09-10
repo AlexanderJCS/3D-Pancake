@@ -2,7 +2,7 @@
 .vscode
 ScreenCapture_*.png
 ScreenCamera_*.json
-./data/
+data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
