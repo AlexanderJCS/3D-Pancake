@@ -43,6 +43,17 @@ class Pancake3D_eae430b521c411efa291f83441a96bd5(OrsPlugin):
     def openGUI(cls):
         instance = Pancake3D_eae430b521c411efa291f83441a96bd5()
 
+        import sys
+        import os
+
+        module_path = os.path.dirname(os.path.abspath(__file__))
+
+        print(f"Module path: {module_path}")
+
+        sys.stdout = open(os.path.join(module_path, "stdout.txt"), "w")
+        sys.stderr = open(os.path.join(module_path, "stderr.txt"), "w")
+        print("Hello World")
+
         if instance is not None:
             instance.openWidget("MainFormPancake3D")
 
