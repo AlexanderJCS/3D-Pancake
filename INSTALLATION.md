@@ -16,39 +16,34 @@ If you have any problems with the installation, please contact Alex or create a 
 
 **Step 3:** Click on the "Code" button -\> Download Zip
 
-![Download Zip Instructions](docs_media/image1.png){width="5.099718941382327in"
-height="3.1954975940507437in"}
+![Download Zip Instructions](docs_media/image1.png)
 
 **Step 4:** Go to the downloads folder and extract the zip file
 
-![Extract All Instructions](docs_media/image2.png){width="4.63788167104112in"
-height="2.227273622047244in"}
+![Extract All Instructions](docs_media/image2.png)
 
 **Step 5:** In a new File Explorer window, navigate to
-`C:\\ProgramData\\ORS` and find the folder containing your Dragonfly
+`C:/ProgramData/ORS` and find the folder containing your Dragonfly
 version (typically `Dragonfly\[your-version-number\]`)
 
-![Find Dragonfly Version Step](docs_media/image3.png){width="5.413083989501312in"
-height="2.914737532808399in"}
+![Find Dragonfly Version Step](docs_media/image3.png)
 
 **Step 6:** Go into the Dragonfly folder for your version -\>
 pythonAllUserExtensions -\> Plugins. (The entire path should look like
-\"C:\\ProgramData\\ORS\\Dragonfly\[YOUR_VERSION\]\\pythonAllUsersExtensions\\Plugins\")
+`C:/ProgramData/ORS/Dragonfly\[YOUR_VERSION\]/pythonAllUsersExtensions/Plugins`)
 
-![Filepath Image](docs_media/image4.png){width="5.980550087489064in"
-height="3.4471227034120733in"}
+![Filepath Image](docs_media/image4.png)
 
 **Step 7**: Drag and drop the folder extracted in step 4 into the
 Plugins folder. Note: The extracted folder contains another folder
 inside it. Make sure to drag the inner folder, not the outer one.
 
-![Copy Folder Image taking note of filepath](docs_media/image5.png){width="6.5in" height="2.063888888888889in"}
+![Copy Folder Image taking note of filepath](docs_media/image5.png)
 
 **Step 8:** Rename the folder to
 Pancake3D_eae430b521c411efa291f83441a96bd5
 
-![Rename](docs_media/image6.png){width="5.386653543307086in"
-height="3.118043525809274in"}
+![Rename](docs_media/image6.png)
 
 ### Breakpoint: Check that everything works so far
 
@@ -56,8 +51,7 @@ Launch Dragonfly. On the top bar, you should see a new "Plugins" tab.
 Within that tab, you should see "Start 3D Pancake". When you click it,
 nothing should happen since installation is not fully complete.
 
-![Plugins tab](docs_media/image7.png){width="5.459095581802274in"
-height="1.531463254593176in"}
+![Plugins tab](docs_media/image7.png)
 
 If you do not see the "Plugins" tab or "Start 3D Pancake", follow the
 below troubleshooting steps:
@@ -72,12 +66,12 @@ show.
 
 **Step 9:** Close Dragonfly
 
-**Step 10:** Go to `C:\\ProgramData\\ORS` -\> your Dragonfly installation
+**Step 10:** Go to `C:/ProgramData/ORS` -> your Dragonfly installation
 -\> `Anaconda3` and copy the filepath
 
-![Filepath to Anaconda3](docs_media/image8.png){width="6.5in" height="3.763888888888889in"}
+![Filepath to Anaconda3](docs_media/image8.png)
 
-**Step 11:** Open command prompt [as administrator]{.underline} and run
+**Step 11:** Open command prompt as **administrator** and run
 the command:
 
 ```sh
@@ -87,19 +81,19 @@ cd [Anaconda_Filepath_From_Previous_Step]
 Replace the brackets and content inside with the file path in you
 copied.
 
-![cd command](docs_media/image9.png){width="6.5in" height="3.4159722222222224in"}
+![cd command](docs_media/image9.png)
 
 **Step 12:** In your current command prompt window, run the following
 command to install all libraries required by 3D Pancake. This may take a
-couple minutes to complete.
+couple of minutes to complete.
 
 ```sh
-python.exe --m pip install --r ..\\pythonAllUsersExtensions\\Plugins\\Pancake3D_eae430b521c411efa291f83441a96bd5\\requirements.txt
+python.exe --m pip install --r ..\pythonAllUsersExtensions\Plugins\Pancake3D_eae430b521c411efa291f83441a96bd5\requirements.txt
 ```
 
-![pip installation](docs_media/image10.png){width="6.5in" height="2.3722222222222222in"}
+![pip installation](docs_media/image10.png)
 
-You may get a few warnings, but as long as there are not errors, you can
+You may get a few warnings, but as long as there are no errors, you can
 ignore them.
 
 **Step 13:** Open Dragonfly and test that the plugin opens. If it does,
