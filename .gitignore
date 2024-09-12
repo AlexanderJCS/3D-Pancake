@@ -4,6 +4,9 @@ ScreenCapture_*.png
 ScreenCamera_*.json
 data/*
 
+stdout.txt
+stderr.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
