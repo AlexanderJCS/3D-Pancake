@@ -88,7 +88,7 @@ command to install all libraries required by 3D Pancake. This may take a
 couple of minutes to complete.
 
 ```sh
-python.exe --m pip install --r ../pythonAllUsersExtensions/Plugins/Pancake3D_eae430b521c411efa291f83441a96bd5/requirements.txt
+python.exe -m pip install -r ../pythonAllUsersExtensions/Plugins/Pancake3D_eae430b521c411efa291f83441a96bd5/requirements.txt
 ```
 
 ![pip installation](docs_media/image10.png)
