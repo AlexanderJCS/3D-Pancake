@@ -134,11 +134,7 @@
         <string>Select Folder</string>
        </property>
        <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>folder_icon.png</normaloff>folder_icon.png</iconset>
+        <string>Select Output Folder</string>
        </property>
       </widget>
      </item>
