@@ -5,7 +5,7 @@ This plugin is made at the Max Planck Florida Institute for Neuroscience (MPFI) 
 
 ## Installation
 
-Installation steps are in the process of being written. Please check back later.
+Please read this file for installation steps: [INSTALLATION.md](./INSTALLATION.md)
 
 ## Usage
 
