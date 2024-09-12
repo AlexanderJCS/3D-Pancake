@@ -24,13 +24,13 @@ If you have any problems with the installation, please contact Alex or create a 
 
 **Step 5:** In a new File Explorer window, navigate to
 `C:/ProgramData/ORS` and find the folder containing your Dragonfly
-version (typically `Dragonfly\[your-version-number\]`)
+version (typically `Dragonfly[YOUR_VERSION]`)
 
 ![Find Dragonfly Version Step](docs_media/image3.png)
 
 **Step 6:** Go into the Dragonfly folder for your version -\>
 pythonAllUserExtensions -\> Plugins. (The entire path should look like
-`C:/ProgramData/ORS/Dragonfly\[YOUR_VERSION\]/pythonAllUsersExtensions/Plugins`)
+`C:/ProgramData/ORS/Dragonfly/[YOUR_VERSION]/pythonAllUsersExtensions/Plugins`)
 
 ![Filepath Image](docs_media/image4.png)
 
@@ -88,7 +88,7 @@ command to install all libraries required by 3D Pancake. This may take a
 couple of minutes to complete.
 
 ```sh
-python.exe --m pip install --r ..\pythonAllUsersExtensions\Plugins\Pancake3D_eae430b521c411efa291f83441a96bd5\requirements.txt
+python.exe --m pip install --r ../pythonAllUsersExtensions/Plugins/Pancake3D_eae430b521c411efa291f83441a96bd5/requirements.txt
 ```
 
 ![pip installation](docs_media/image10.png)
