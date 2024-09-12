@@ -1,4 +1,5 @@
 import functools
+import time
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -32,7 +33,7 @@ def process_single_roi_worker(
     max_indices = roi.getLocalBoundingBoxMax(0)
     max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-    roi_arr = roi_arr[
+    roi_arr_cropped = roi_arr[
         min_indices[0]:max_indices[0] + 1,
         min_indices[1]:max_indices[1] + 1,
         min_indices[2]:max_indices[2] + 1
@@ -40,7 +41,7 @@ def process_single_roi_worker(
 
     # Data processing
     output = processing.get_area(
-        roi_arr,
+        roi_arr_cropped,
         scale=scale,
         visualize=visualize_steps,
         visualize_end=visualize_results,
@@ -124,12 +125,25 @@ class PancakeWorker(QThread):
             scale=scale,
             visualize_steps=visualize_steps,
             visualize_results=visualize_results,
-            c_s=c_s
+            c_s=c_s,
         )
 
+        results = []
         with mp.Pool() as pool:
             self.update_output_label.emit("Processing...")
-            outputs = pool.map(partial_func, single_rois)
+
+            for roi in single_rois:
+                result = pool.apply_async(partial_func, args=(roi,))
+                results.append(result)
+
+                # The beginning step of the Multiprocessing process is very memory intensive: it requires copying all
+                #  the data in the ROI, then only cropping what it needs. This can be very memory intensive, so we need
+                #  to wait before processing another to prevent multiple processes from doing this operation at once.
+                #  If this is not done, memory errors can occur and ROI.getAsNDArray() can return an array that looks
+                #  like [[[0]]].
+                time.sleep(13)
+
+            outputs = [result.get() for result in results]
 
         if not self._output_filepath == "":
             self.update_output_label.emit("Writing to CSV...")
@@ -137,7 +151,8 @@ class PancakeWorker(QThread):
             try:
                 csv_output.write_csv(self._output_filepath, labels, outputs)
             except (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError):
-                self.update_output_label.emit("Error writing to file. Check the filepath.")
+                self.update_output_label.emit(
+                    "Error. Ensure the file is not open by another program and the filepath is valid.")
                 return
 
         self.update_output_label.emit("Done")
