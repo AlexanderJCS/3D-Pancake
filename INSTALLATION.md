@@ -41,7 +41,7 @@ inside it. Make sure to drag the inner folder, not the outer one.
 ![Copy Folder Image taking note of filepath](docs_media/image5.png)
 
 **Step 8:** Rename the folder to
-Pancake3D_eae430b521c411efa291f83441a96bd5
+`Pancake3D_eae430b521c411efa291f83441a96bd5`
 
 ![Rename](docs_media/image6.png)
 
