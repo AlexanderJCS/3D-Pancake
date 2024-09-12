@@ -2,7 +2,7 @@ import functools
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-import csv_output
+from . import csv_output
 from .processing import data
 from typing import Union
 
