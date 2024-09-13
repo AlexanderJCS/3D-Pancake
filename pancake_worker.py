@@ -102,9 +102,7 @@ class PancakeWorker(QThread):
             self.update_output_label.emit("Error writing to file. Check the filepath.")
             return
 
-    def process_multi_roi(
-            self, multi_roi: ors.MultiROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float
-    ):
+    def process_multi_roi(self):
         # TODO: figure out why all these parameters are passed. Do they need to be?
 
         single_rois: list[ors.ROI] = []
@@ -115,17 +113,17 @@ class PancakeWorker(QThread):
             labels.append(str(label))
 
             copy_roi = ors.ROI()
-            copy_roi.copyShapeFromStructuredGrid(multi_roi)
-            multi_roi.addToVolumeROI(copy_roi, label)
+            copy_roi.copyShapeFromStructuredGrid(self._selected_roi)
+            self._selected_roi.addToVolumeROI(copy_roi, label)
 
             single_rois.append(copy_roi)
 
         partial_func = functools.partial(
             process_single_roi_worker,
-            scale=scale,
-            visualize_steps=visualize_steps,
-            visualize_results=visualize_results,
-            c_s=c_s,
+            scale=self._scale,
+            visualize_steps=self._visualize_steps,
+            visualize_results=self._visualize_results,
+            c_s=self._c_s,
         )
 
         results = []
@@ -145,7 +143,7 @@ class PancakeWorker(QThread):
 
             outputs = [result.get() for result in results]
 
-        if not self._output_filepath == "":
+        if self._output_filepath != "":
             self.update_output_label.emit("Writing to CSV...")
 
             try:
@@ -168,13 +166,7 @@ class PancakeWorker(QThread):
             if isinstance(self._selected_roi, ors.ROI):
                 self.process_single_roi()
             else:
-                self.process_multi_roi(
-                    self._selected_roi,
-                    self._scale,
-                    self._visualize_steps,
-                    self._visualize_results,
-                    self._c_s
-                )
+                self.process_multi_roi()
 
         except Exception as e:
             self.update_output_label.emit(f"Error: {e}")
