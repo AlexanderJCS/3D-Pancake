@@ -20,9 +20,16 @@ import multiprocessing as mp
 global_vis_signal = None
 
 
-def process_single_roi_worker(
-        roi: ors.ROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float
-):
+def process_single_roi(roi: ors.ROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float):
+    """
+    :param roi: The ROI to process.
+    :param scale: The scale of the data.
+    :param visualize_steps: Whether to visualize each step.
+    :param visualize_results: Whether to visualize the final result.
+    :param c_s: The c_s value. How tight a fit the surface is to the data.
+    :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
+    """
+    
     roi_arr = roi.getAsNDArray()
 
     if roi_arr.shape == (0,):
@@ -86,8 +93,8 @@ class PancakeWorker(QThread):
         global_vis_signal = self.show_visualization
 
     def process_single_roi(self):
-        output = process_single_roi_worker(self._selected_roi, self._scale, self._visualize_steps,
-                                           self._visualize_results, self._c_s)
+        output = process_single_roi(self._selected_roi, self._scale, self._visualize_steps,
+                                    self._visualize_results, self._c_s)
         self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
 
         if self._output_filepath == "":
@@ -119,7 +126,7 @@ class PancakeWorker(QThread):
             single_rois.append(copy_roi)
 
         partial_func = functools.partial(
-            process_single_roi_worker,
+            process_single_roi,
             scale=self._scale,
             visualize_steps=self._visualize_steps,
             visualize_results=self._visualize_results,

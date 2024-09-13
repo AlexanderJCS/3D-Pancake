@@ -54,6 +54,13 @@ class MainFormPancake3D(OrsAbstractWindow):
 
     @staticmethod
     def roi_dialog(managed_class: Union[type[ROI], type[MultiROI]] = ROI) -> Optional:
+        """
+        Prompts the user to select an ROI and returns the selected ROI.
+        
+        :param managed_class: The class of the ROI to select (ROI or MultiROI)
+        :return: The selected ROI
+        """
+        
         chooser = ChooseObjectAndNewName(
             managedClass=[managed_class],
             parent=WorkingContext.getCurrentContextWindow()
@@ -68,11 +75,16 @@ class MainFormPancake3D(OrsAbstractWindow):
             return None
 
         guid = chooser.getObjectGUID()
-        roi = orsObj(guid)
+        return orsObj(guid)
 
-        return roi
-
-    def select_roi(self, managed_class: Union[type[ROI], type[MultiROI]]):
+    def select_roi(self, managed_class: Union[type[ROI], type[MultiROI]]) -> None:
+        """
+        Prompts the user to select an ROI and sets self.selected_roi to the selected ROI. Also updates
+        self.ui.label_selected to display the selected ROI's title.
+        
+        :param managed_class: The class of the ROI to select (ROI or MultiROI)
+        """
+        
         roi: Optional[managed_class] = self.roi_dialog(managed_class)
 
         if roi is None:
@@ -94,11 +106,24 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.select_roi(MultiROI)
 
     @staticmethod
-    def visualize_signal(function):
+    def visualize_signal(function) -> None:
+        """
+        Designed to respond to a signal to visualize the data. This is used to visualize the data in a separate thread,
+        since visualization libraries (matplotlib, Open3D, etc.) cannot be run in a separate thread.
+        
+        Acts as a wrapper for the provided function to be called with no arguments
+        
+        :param function: The function to call
+        """
+        
         function()
 
     @pyqtSlot()
-    def on_btn_process_clicked(self):
+    def on_btn_process_clicked(self) -> None:
+        """
+        Processes the selected ROI when pressed
+        """
+        
         # TODO: Add error handling for invalid scale input (e.g., negative values)
 
         xy_scale = float(self.ui.line_edit_xy_scale.text())
@@ -122,7 +147,11 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.worker_thread.show_visualization.connect(self.visualize_signal)
         self.worker_thread.start()
 
-    def refresh_file_path(self):
+    def refresh_file_path(self) -> None:
+        """
+        Refreshes the file path of the output file in the line edit UI. Combines the selected directory and file name
+        """
+        
         self.ui.line_edit_filepath.setText(
             os.path.join(self.selected_filepath_dir, f"{self.selected_filepath_name}.csv").replace("\\", "/")
         )

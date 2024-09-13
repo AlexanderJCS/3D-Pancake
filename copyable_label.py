@@ -3,6 +3,10 @@ from PyQt6.QtCore import Qt
 
 
 class CopyableLabel(QLineEdit):
+    """
+    A QLineEdit that looks like a QLabel and is designed to be selected and copied, but not edited.
+    """
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
