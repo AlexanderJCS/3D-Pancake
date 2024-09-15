@@ -45,6 +45,7 @@ def get_area(
     :param visualize_end: Whether to visualize the final result
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
+    :param visualize_signal: The signal to emit the visualization to. Used for PyQt
     :return: A PancakeOutput class, containing surface area and a bunch of other data
     """
 
@@ -77,10 +78,11 @@ def get_area(
     distance_map = dist.gen_dist_map(formatted, scale, downsample)
     blurred = dist.blur(distance_map, c_s, scale)
 
-    if visualize:
-        if not visualize_signal:  # don't show in the signal since matplotlib doesn't play well with PyQt
-            visualizer = visual.SliceViewer(distance_map)
-            visualizer.visualize()
+    if visualize and not visualize_signal:
+        # don't show in the signal since matplotlib doesn't play well with PyQt
+        
+        visualizer = visual.SliceViewer(distance_map)
+        visualizer.visualize()
 
     # Step D: find the center
     center_point = center.geom_center(distance_map, scale)
