@@ -14,14 +14,10 @@ def geom_center(dist_map: np.array, scale: meta.Scale) -> np.ndarray:
 
     # Find the top 1% of the PSD
     top_vertices = np.percentile(dist_map, 99)
-
-    # Find the indices of the top 1% of the PSD
     top_indices = np.where(dist_map >= top_vertices)
-
-    # Find the geometric center of the top 20% of the PSD
+    
+    # Compute the center
     center = np.mean(top_indices, axis=1)
-
-    # Convert the geometric center from voxel space to world space
     center = center * scale.zyx()
 
     return center[::-1]
