@@ -1,5 +1,4 @@
 import functools
-import time
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -11,8 +10,6 @@ from ORSModel import ors
 
 import numpy as np
 from .processing import processing
-
-import multiprocessing as mp
 
 
 # Since the visualization signal cannot be pickled, it cannot be passed to a multiprocessing process. This is a
