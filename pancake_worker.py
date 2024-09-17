@@ -129,6 +129,8 @@ class PancakeWorker(QThread):
                 process_single_roi(copy_roi, self._scale, self._visualize_steps, self._visualize_results, self._c_s)
             )
 
+            copy_roi.deleteObject()
+
         self.update_output_label.emit(f"Completed {self._selected_roi.getLabelCount()} PSDs.")
 
         if self._output_filepath == "":
