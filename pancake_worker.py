@@ -92,6 +92,14 @@ class PancakeWorker(QThread):
 
         global_vis_signal = self.show_visualization
 
+    def _write_to_csv(self, labels: list[str], outputs: list[float]):
+        try:
+            csv_output.write_csv(self._output_filepath, labels, outputs)
+        except (FileNotFoundError, IsADirectoryError, NotADirectoryError):
+            self.update_output_label.emit("Error writing to file. Check the filepath.")
+        except PermissionError:
+            self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
+
     def process_single_roi(self):
         output = process_single_roi(self._selected_roi, self._scale, self._visualize_steps,
                                     self._visualize_results, self._c_s)
@@ -100,67 +108,33 @@ class PancakeWorker(QThread):
         if self._output_filepath == "":
             return
 
-        labels = [self._selected_roi.getTitle()]
-        outputs = [output]
-
-        try:
-            csv_output.write_csv(self._output_filepath, labels, outputs)
-        except (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError):
-            self.update_output_label.emit("Error writing to file. Check the filepath.")
-            return
+        self._write_to_csv(labels=[self._selected_roi.getTitle()], outputs=[output])
 
     def process_multi_roi(self):
-        # TODO: figure out why all these parameters are passed. Do they need to be?
-
-        single_rois: list[ors.ROI] = []
-
         labels = []
+        outputs = []
 
         for label in range(1, self._selected_roi.getLabelCount() + 1):
-            labels.append(str(label))
+            self.update_output_label.emit(f"Loading PSD {label}/{self._selected_roi.getLabelCount()}")
 
             copy_roi = ors.ROI()
             copy_roi.copyShapeFromStructuredGrid(self._selected_roi)
             self._selected_roi.addToVolumeROI(copy_roi, label)
 
-            single_rois.append(copy_roi)
+            self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
-        partial_func = functools.partial(
-            process_single_roi,
-            scale=self._scale,
-            visualize_steps=self._visualize_steps,
-            visualize_results=self._visualize_results,
-            c_s=self._c_s,
-        )
+            labels.append(label)
 
-        results = []
-        with mp.Pool() as pool:
-            self.update_output_label.emit("Processing...")
+            outputs.append(
+                process_single_roi(copy_roi, self._scale, self._visualize_steps, self._visualize_results, self._c_s)
+            )
 
-            for roi in single_rois:
-                result = pool.apply_async(partial_func, args=(roi,))
-                results.append(result)
+        self.update_output_label.emit(f"Completed {self._selected_roi.getLabelCount()} PSDs.")
 
-                # The beginning step of the Multiprocessing process is very memory intensive: it requires copying all
-                #  the data in the ROI, then only cropping what it needs. This can be very memory intensive, so we need
-                #  to wait before processing another to prevent multiple processes from doing this operation at once.
-                #  If this is not done, memory errors can occur and ROI.getAsNDArray() can return an array that looks
-                #  like [[[0]]].
-                time.sleep(13)
+        if self._output_filepath == "":
+            return
 
-            outputs = [result.get() for result in results]
-
-        if self._output_filepath != "":
-            self.update_output_label.emit("Writing to CSV...")
-
-            try:
-                csv_output.write_csv(self._output_filepath, labels, outputs)
-            except (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError):
-                self.update_output_label.emit(
-                    "Error. Ensure the file is not open by another program and the filepath is valid.")
-                return
-
-        self.update_output_label.emit("Done")
+        self._write_to_csv(labels, outputs)
 
     def run(self):
         try:
