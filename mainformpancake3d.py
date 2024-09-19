@@ -141,7 +141,8 @@ class MainFormPancake3D(OrsAbstractWindow):
         output_filepath = self.ui.line_edit_filepath.text()
 
         self.worker_thread = pancake_worker.PancakeWorker(
-            self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s, output_filepath
+            self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s, output_filepath,
+            self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked()
         )
         self.worker_thread.update_output_label.connect(self.update_output_label)
         self.worker_thread.show_visualization.connect(self.visualize_signal)

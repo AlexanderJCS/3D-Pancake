@@ -35,7 +35,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Parameters</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Parameters&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -98,7 +98,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Output</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Output&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -139,7 +139,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Input</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Input&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -202,7 +202,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QCheckBox" name="chk_compare_lorensen">
+      <widget class="QCheckBox" name="chk_compare_lewiner">
        <property name="toolTip">
         <string>Add a column in the output CSV of the surface area as predicted by the Lewiner 2012 Marching Cubes algorithm</string>
        </property>

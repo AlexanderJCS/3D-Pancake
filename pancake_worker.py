@@ -1,4 +1,5 @@
 import functools
+import typing
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -77,7 +78,7 @@ class PancakeWorker(QThread):
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
                  scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
-                 output_filepath: str):
+                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool):
         """
         Initializes the Pancake Worker.
 
@@ -97,12 +98,28 @@ class PancakeWorker(QThread):
         self._visualize_results = visualize_results
         self._c_s = c_s
         self._output_filepath = output_filepath
+        self._compare_lindblad = compare_lindblad
+        self._compare_lewiner = compare_lewiner
 
         global_vis_signal = self.show_visualization
 
-    def _write_to_csv(self, labels: list[str], outputs: list[float]):
+    def _write_to_csv(
+            self, labels: list[str], outputs: list[float],
+            lindblad_2005: typing.Optional[list[float]] = None,
+            lewiner_2012: typing.Optional[list[float]] = None
+    ):
+        columns = {
+            "Name (object title or label number)": labels,
+            "3D Pancake Area (um²)": [str(output) for output in outputs]
+        }
+
+        if lindblad_2005 is not None:
+            columns["Lindblad 2005 Area (um²)"] = [str(output) for output in lindblad_2005]
+        if lewiner_2012 is not None:
+            columns["Lewiner 2012 Area (um²)"] = [str(output) for output in lewiner_2012]
+
         try:
-            csv_output.write_csv(self._output_filepath, labels, outputs)
+            csv_output.write_csv(self._output_filepath, columns)
         except (FileNotFoundError, IsADirectoryError, NotADirectoryError):
             self.update_output_label.emit("Error writing to file. Check the filepath.")
         except PermissionError:
@@ -113,16 +130,27 @@ class PancakeWorker(QThread):
 
         output = process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
                                     self._visualize_results, self._c_s)
+
+        self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
+        lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
+            if self._compare_lindblad else None
+
+        self.update_output_label.emit(f"Calculating Lewiner 2012 area...")
+        lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale)] \
+            if self._compare_lewiner else None
+
         self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
 
         if self._output_filepath == "":
             return
 
-        self._write_to_csv(labels=[self._selected_roi.getTitle()], outputs=[output])
+        self._write_to_csv([self._selected_roi.getTitle()], [output], lindblad_2005, lewiner_2012)
 
     def process_multi_roi(self):
         labels = []
         outputs = []
+        lindblad_2005 = [] if self._compare_lindblad else None
+        lewiner_2012 = [] if self._compare_lewiner else None
 
         for label in range(1, self._selected_roi.getLabelCount() + 1):
             self.update_output_label.emit(f"Loading PSD {label}/{self._selected_roi.getLabelCount()}")
@@ -134,11 +162,19 @@ class PancakeWorker(QThread):
             self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
             labels.append(label)
-
             cropped_roi_arr = get_cropped_roi_arr(copy_roi)
-
             outputs.append(process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
                                               self._visualize_results, self._c_s))
+
+            if self._compare_lindblad:
+                self.update_output_label.emit(
+                    f"Calculating Lindblad 2005 area for PSD {label}/{self._selected_roi.getLabelCount()}...")
+                lindblad_2005.append(other_algorithms.surface_area_lindblad_2005(copy_roi))
+
+            if self._compare_lewiner:
+                self.update_output_label.emit(
+                    f"Calculating Lewiner 2012 area for PSD {label}/{self._selected_roi.getLabelCount()}...")
+                lewiner_2012.append(other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale))
 
             copy_roi.deleteObject()
 
@@ -147,7 +183,9 @@ class PancakeWorker(QThread):
         if self._output_filepath == "":
             return
 
-        self._write_to_csv(labels, outputs)
+        print(lindblad_2005, lewiner_2012)
+
+        self._write_to_csv(labels, outputs, lindblad_2005, lewiner_2012)
 
     def run(self):
         try:
