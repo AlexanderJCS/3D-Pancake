@@ -10,6 +10,7 @@ from ORSModel import ors
 
 import numpy as np
 from .processing import processing
+from . import other_algorithms
 
 
 # Since the visualization signal cannot be pickled, it cannot be passed to a multiprocessing process. This is a
@@ -17,31 +18,41 @@ from .processing import processing
 global_vis_signal = None
 
 
-def process_single_roi(roi: ors.ROI, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float):
+def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
     """
-    :param roi: The ROI to process.
-    :param scale: The scale of the data.
-    :param visualize_steps: Whether to visualize each step.
-    :param visualize_results: Whether to visualize the final result.
-    :param c_s: The c_s value. How tight a fit the surface is to the data.
-    :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
+    Gets the cropped ROI array. The ROI is cropped to the bounding box of the ROI.
+
+    :param roi: The ROI to crop
+    :return: The cropped ROI array
     """
-    
+
     roi_arr = roi.getAsNDArray()
 
     if roi_arr.shape == (0,):
-        return -1
+        return roi_arr
 
     min_indices = roi.getLocalBoundingBoxMin(0)
     min_indices = np.array([min_indices.getX(), min_indices.getY(), min_indices.getZ()], dtype=int)[::-1]
     max_indices = roi.getLocalBoundingBoxMax(0)
     max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-    roi_arr_cropped = roi_arr[
+    return roi_arr[
         min_indices[0]:max_indices[0] + 1,
         min_indices[1]:max_indices[1] + 1,
         min_indices[2]:max_indices[2] + 1
     ]
+
+
+def process_single_roi(
+        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool,visualize_results: bool, c_s: float):
+    """
+    :param roi_arr_cropped: The cropped ROI array
+    :param scale: The scale of the data.
+    :param visualize_steps: Whether to visualize each step.
+    :param visualize_results: Whether to visualize the final result.
+    :param c_s: The c_s value. How tight a fit the surface is to the data.
+    :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
+    """
 
     # Data processing
     output = processing.get_area(
@@ -98,7 +109,9 @@ class PancakeWorker(QThread):
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
     def process_single_roi(self):
-        output = process_single_roi(self._selected_roi, self._scale, self._visualize_steps,
+        cropped_roi_arr = get_cropped_roi_arr(self._selected_roi)
+
+        output = process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
                                     self._visualize_results, self._c_s)
         self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
 
@@ -122,9 +135,10 @@ class PancakeWorker(QThread):
 
             labels.append(label)
 
-            outputs.append(
-                process_single_roi(copy_roi, self._scale, self._visualize_steps, self._visualize_results, self._c_s)
-            )
+            cropped_roi_arr = get_cropped_roi_arr(copy_roi)
+
+            outputs.append(process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
+                                              self._visualize_results, self._c_s))
 
             copy_roi.deleteObject()
 

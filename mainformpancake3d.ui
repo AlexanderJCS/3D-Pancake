@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>300</height>
+    <width>420</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>350</width>
-    <height>300</height>
+    <width>420</width>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -88,23 +88,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6"/>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="chk_visualize_steps">
-     <property name="text">
-      <string>Visualize Steps</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="chk_visualize_results">
-     <property name="text">
-      <string>Visualize Results</string>
-     </property>
-    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label">
@@ -184,6 +167,64 @@
       <string>Selected: None</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:700;&quot;&gt;Debug&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QCheckBox" name="chk_visualize_steps">
+       <property name="toolTip">
+        <string>Visualize each step of the algorithm in a new window. Not recommended for regular use or with processing MultiROIs.</string>
+       </property>
+       <property name="text">
+        <string>Visualize Steps</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chk_visualize_results">
+       <property name="toolTip">
+        <string>Visualize the final step of the algorithm in a new window. Not recommended for regular use or with processing MultiROIs.</string>
+       </property>
+       <property name="text">
+        <string>Visualize Final Step</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QCheckBox" name="chk_compare_lorensen">
+       <property name="toolTip">
+        <string>Add a column in the output CSV of the surface area as predicted by the Lewiner 2012 Marching Cubes algorithm</string>
+       </property>
+       <property name="whatsThis">
+        <string/>
+       </property>
+       <property name="text">
+        <string>Compare area to Lewiner 2012</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chk_compare_lindblad">
+       <property name="toolTip">
+        <string>Add a column in the output CSV of the surface area as predicted by the Lindblad 2005 algorithm</string>
+       </property>
+       <property name="text">
+        <string>Compare area to Lindblad 2005</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QPushButton" name="btn_process">
