@@ -1,3 +1,5 @@
+from ORSModel import ors
+
 from skimage import measure
 
 from .processing import data
@@ -23,3 +25,15 @@ def surface_area_lewiner_2012(roi_data: np.ndarray, scale: data.Scale):
     mesh.triangles = o3d.utility.Vector3iVector(faces)
 
     return mesh.get_surface_area() / 1e6 / 2
+
+
+def surface_area_lindblad_2005(roi: ors.ROI):
+    """
+    Calculates the surface area of an ROI using the Lindblad 2005 algorithm.
+
+    :param roi: The ROI
+    :return: The estimated surface area of the PSD in microns^2.
+    """
+
+    # multiply by 1e12 to convert from m^2 to microns^2
+    return roi.getSurfaceFromWeightedVoxelEstimation(0, None) * 1e12 / 2
