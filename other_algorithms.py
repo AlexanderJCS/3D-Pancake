@@ -18,6 +18,9 @@ def surface_area_lewiner_2012(roi_data: np.ndarray, scale: data.Scale):
                 dividing by 2.
     """
 
+    # pad the ROI data to avoid topological inconsistencies near the edge
+    roi_data = np.pad(roi_data, 1)
+
     vertices, faces, normals, values = measure.marching_cubes(roi_data, spacing=scale.zyx())
 
     mesh = o3d.geometry.TriangleMesh()
