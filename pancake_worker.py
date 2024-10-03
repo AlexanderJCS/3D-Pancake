@@ -14,12 +14,14 @@ from .processing import processing
 from . import other_algorithms
 
 
-def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
+def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np.ndarray]:
     """
     Gets the cropped ROI array. The ROI is cropped to the bounding box of the ROI.
 
+    :param scale: The scale of each voxel
     :param roi: The ROI to crop
-    :return: The cropped ROI array
+    :return: tuple(The cropped ROI array, the transformations required to translate the vertices back to the original
+              in world space)
     """
 
     roi_arr = roi.getAsNDArray()
@@ -36,20 +38,29 @@ def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
         min_indices[0]:max_indices[0] + 1,
         min_indices[1]:max_indices[1] + 1,
         min_indices[2]:max_indices[2] + 1
-    ]
+    ], (-1 * min_indices[::-1] * scale.xyz())
 
 
-def mesh_to_ors(mesh: processing.mesh.Mesh) -> ors.Mesh:
+def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray]) -> ors.Mesh:
     """
     Converts a processing.mesh.Mesh object to a Dragonfly ORS mesh. Used for displaying the final mesh to the user.
 
     :param mesh: The mesh to convert
+    :param translations: The translations made to the OBB and mesh when padding the data. Used to translate the vertices
+        back to the original when creating the output mesh to visualize in Dragonfly.
     :return: The Dragonfly ORS mesh
     """
 
     o3d_mesh = mesh.mesh
 
-    np_vertices = np.asarray(o3d_mesh.vertices).flatten()
+    np_vertices = np.asarray(o3d_mesh.vertices)
+
+    if translations is not None:
+        for translation in translations:
+            np_vertices -= translation
+
+    np_vertices = np_vertices.flatten()
+
     np_triangles = np.asarray(o3d_mesh.triangles).flatten()
 
     # divide vertices by 1e9 to get meters instead of nanometers
@@ -153,14 +164,14 @@ class PancakeWorker(QThread):
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
     def process_single_roi(self):
-        cropped_roi_arr = get_cropped_roi_arr(self._selected_roi)
+        cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, self._scale)
 
         output = process_single_roi(
             cropped_roi_arr, self._scale, self._visualize_steps,
             self._visualize_results, self._c_s, self.show_visualization
         )
 
-        ors_mesh = mesh_to_ors(output.psd_mesh)
+        ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations])
         ors_mesh.publish()
 
         area_output = output.area_microns()
@@ -196,14 +207,14 @@ class PancakeWorker(QThread):
             self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
             labels.append(label)
-            cropped_roi_arr = get_cropped_roi_arr(copy_roi)
+            cropped_roi_arr, original_translations = get_cropped_roi_arr(copy_roi, self._scale)
 
             output = process_single_roi(
                 cropped_roi_arr, self._scale, self._visualize_steps, self._visualize_results,
                 self._c_s, self.show_visualization
             )
 
-            ors_mesh = mesh_to_ors(output.psd_mesh)
+            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations])
             ors_mesh.publish()
 
             outputs.append(output.area_microns())

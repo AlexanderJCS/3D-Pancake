@@ -27,6 +27,12 @@ class PancakeOutput:
     gradient: np.ndarray
     projected_gradient: np.ndarray
 
+    """
+    The translations made to the OBB and mesh when padding the data. Used to translate the vertices back to the original
+    when creating the output mesh to visualize in Dragonfly.
+    """
+    translations: np.ndarray
+
     def area_microns(self) -> float:
         """
         Gets the area in um^2
@@ -58,6 +64,8 @@ def get_area(
     :return: A PancakeOutput class, containing surface area and a bunch of other data
     """
 
+    # TODO: code cleanup - this function is very long and can be shortened easily through extraction
+
     # Step A: load and format data
     formatted = data.format_data(raw_data, downsample, scale)
     
@@ -68,7 +76,7 @@ def get_area(
     obb = bounding_box.Obb(formatted, scale)
 
     # Step Ba: Expand the dataset so the OBB does not have values outside the dataset
-    formatted = obb.expand_data(scale, formatted)
+    formatted, translations = obb.expand_data(scale, formatted)
 
     if visualize:
         if visualize_signal:
@@ -209,6 +217,7 @@ def get_area(
         np.argwhere(formatted)[:, ::-1] * scale.xyz(),
         psd_mesh,
         gradient,
-        projected_gradient
+        projected_gradient,
+        translations
     )
     

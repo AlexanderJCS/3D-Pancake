@@ -61,14 +61,14 @@ class Obb:
         normal = v2 - v1
         return normal / np.linalg.norm(normal)
 
-    def expand_data(self, scale: meta.Scale, data: np.ndarray) -> np.ndarray:
+    def expand_data(self, scale: meta.Scale, data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Pads the data so the OBB does not have values outside the dataset. In addition, it offsets the vertices
         of this OBB to adjust to the new, expanded dataset.
 
         :param scale: The scale of the data.
         :param data: The data to expand
-        :return: The expanded data. Also mutates the vertices of this OBB
+        :return: (The expanded data, the xyz transformations). Also mutates the vertices of this OBB
         """
 
         # Get the min and max of the OBB
@@ -108,4 +108,4 @@ class Obb:
         self.o3d_obb.translate(translation_arr, relative=True)
         self.vertices = np.array(self.o3d_obb.get_box_points())
 
-        return padded_data
+        return padded_data, translation_arr
