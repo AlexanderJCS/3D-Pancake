@@ -11,7 +11,7 @@ from . import center
 from . import mesh
 from . import vectors
 
-from .. import visual
+import visual
 
 
 @dataclass(frozen=True)

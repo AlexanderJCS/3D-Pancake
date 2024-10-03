@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
 
-from ..processing import data
-from ..processing import bounding_box
-from ..processing import mesh
+from processing import data
+from processing import bounding_box
+from processing import mesh
 
 from typing import Optional
 
