@@ -14,11 +14,6 @@ from .processing import processing
 from . import other_algorithms
 
 
-# Since the visualization signal cannot be pickled, it cannot be passed to a multiprocessing process. This is a
-#  workaround. It's not the most elegant solution, but it works.
-global_vis_signal = None
-
-
 def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
     """
     Gets the cropped ROI array. The ROI is cropped to the bounding box of the ROI.
@@ -45,8 +40,10 @@ def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
 
 
 def process_single_roi(
-        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool,visualize_results: bool, c_s: float):
+        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
+        vis_signal: pyqtSignal):
     """
+    :param vis_signal: The signal to visualize the data
     :param roi_arr_cropped: The cropped ROI array
     :param scale: The scale of the data.
     :param visualize_steps: Whether to visualize each step.
@@ -62,7 +59,7 @@ def process_single_roi(
         visualize=visualize_steps,
         visualize_end=visualize_results,
         c_s=c_s,
-        visualize_signal=global_vis_signal
+        visualize_signal=vis_signal
     )
 
     return output.area_nm / 1e6  # area in um^2
@@ -88,7 +85,6 @@ class PancakeWorker(QThread):
         :param visualize_results: Whether to visualize the final result
         :param c_s: The c_s value. How tight a fit the surface is to the data.
         """
-        global global_vis_signal
 
         super().__init__()
 
@@ -100,8 +96,6 @@ class PancakeWorker(QThread):
         self._output_filepath = output_filepath
         self._compare_lindblad = compare_lindblad
         self._compare_lewiner = compare_lewiner
-
-        global_vis_signal = self.show_visualization
 
     def _write_to_csv(
             self, labels: list[str], outputs: list[float],
@@ -129,7 +123,7 @@ class PancakeWorker(QThread):
         cropped_roi_arr = get_cropped_roi_arr(self._selected_roi)
 
         output = process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                    self._visualize_results, self._c_s)
+                                    self._visualize_results, self._c_s, self.show_visualization)
 
         self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
         lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
@@ -164,7 +158,7 @@ class PancakeWorker(QThread):
             labels.append(label)
             cropped_roi_arr = get_cropped_roi_arr(copy_roi)
             outputs.append(process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                              self._visualize_results, self._c_s))
+                                              self._visualize_results, self._c_s, self.show_visualization))
 
             if self._compare_lindblad:
                 self.update_output_label.emit(
