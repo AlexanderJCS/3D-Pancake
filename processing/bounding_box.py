@@ -66,7 +66,7 @@ class Obb:
         Pads the data so the OBB does not have values outside the dataset. In addition, it offsets the vertices
         of this OBB to adjust to the new, expanded dataset.
 
-        :param scale: The scale of the data
+        :param scale: The scale of the data.
         :param data: The data to expand
         :return: The expanded data. Also mutates the vertices of this OBB
         """

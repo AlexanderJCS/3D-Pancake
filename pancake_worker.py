@@ -39,6 +39,42 @@ def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
     ]
 
 
+def mesh_to_ors(mesh: processing.mesh.Mesh) -> ors.Mesh:
+    """
+    Converts a processing.mesh.Mesh object to a Dragonfly ORS mesh. Used for displaying the final mesh to the user.
+
+    :param mesh: The mesh to convert
+    :return: The Dragonfly ORS mesh
+    """
+
+    o3d_mesh = mesh.mesh
+
+    np_vertices = np.asarray(o3d_mesh.vertices).flatten()
+    np_triangles = np.asarray(o3d_mesh.triangles).flatten()
+
+    # divide vertices by 1e9 to get meters instead of nanometers
+    np_vertices = np_vertices / 1e9
+
+    ors_mesh = ors.FaceVertexMesh()
+    ors_mesh.setTSize(1)  # set the time dimension
+
+    # todo: code cleanup - instead of doing this weird for loop thing, flatten np_vertices and np_triangles
+
+    ors_mesh_vertices = ors_mesh.getVertices(0)
+    ors_mesh_vertices.setSize(len(np_vertices) * 3)  # multiply by 3 to account for x, y, z
+
+    for i in range(len(np_vertices)):
+        ors_mesh_vertices.atPut(i, np_vertices[i])
+
+    ors_triangles = ors_mesh.getEdges(0)
+    ors_triangles.setSize(len(np_triangles) * 3)  # multiply by 3 to account for 3 vertices per triangle
+
+    for i in range(len(np_triangles)):
+        ors_triangles.atPut(i, np_triangles[i])
+
+    return ors_mesh
+
+
 def process_single_roi(
         roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
         vis_signal: pyqtSignal):
@@ -52,8 +88,7 @@ def process_single_roi(
     :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
     """
 
-    # Data processing
-    output = processing.get_area(
+    return processing.get_area(
         roi_arr_cropped,
         scale=scale,
         visualize=visualize_steps,
@@ -61,8 +96,6 @@ def process_single_roi(
         c_s=c_s,
         visualize_signal=vis_signal
     )
-
-    return output.area_nm / 1e6  # area in um^2
 
 
 class PancakeWorker(QThread):
@@ -122,8 +155,15 @@ class PancakeWorker(QThread):
     def process_single_roi(self):
         cropped_roi_arr = get_cropped_roi_arr(self._selected_roi)
 
-        output = process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                    self._visualize_results, self._c_s, self.show_visualization)
+        output = process_single_roi(
+            cropped_roi_arr, self._scale, self._visualize_steps,
+            self._visualize_results, self._c_s, self.show_visualization
+        )
+
+        ors_mesh = mesh_to_ors(output.psd_mesh)
+        ors_mesh.publish()
+
+        area_output = output.area_microns()
 
         self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
         lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
@@ -133,12 +173,12 @@ class PancakeWorker(QThread):
         lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale)] \
             if self._compare_lewiner else None
 
-        self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
+        self.update_output_label.emit(f"Done. Area: {area_output:.6f} μm²")
 
         if self._output_filepath == "":
             return
 
-        self._write_to_csv([self._selected_roi.getTitle()], [output], lindblad_2005, lewiner_2012)
+        self._write_to_csv([self._selected_roi.getTitle()], [area_output], lindblad_2005, lewiner_2012)
 
     def process_multi_roi(self):
         labels = []
@@ -157,8 +197,16 @@ class PancakeWorker(QThread):
 
             labels.append(label)
             cropped_roi_arr = get_cropped_roi_arr(copy_roi)
-            outputs.append(process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                              self._visualize_results, self._c_s, self.show_visualization))
+
+            output = process_single_roi(
+                cropped_roi_arr, self._scale, self._visualize_steps, self._visualize_results,
+                self._c_s, self.show_visualization
+            )
+
+            ors_mesh = mesh_to_ors(output.psd_mesh)
+            ors_mesh.publish()
+
+            outputs.append(output.area_microns())
 
             if self._compare_lindblad:
                 self.update_output_label.emit(

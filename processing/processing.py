@@ -27,6 +27,15 @@ class PancakeOutput:
     gradient: np.ndarray
     projected_gradient: np.ndarray
 
+    def area_microns(self) -> float:
+        """
+        Gets the area in um^2
+
+        :return: The area in um^2
+        """
+
+        return self.area_nm / 1e6
+
 
 def get_area(
         raw_data: np.ndarray, scale: data.Scale, visualize: bool = False, c_s: float = 0.67, downsample: bool = False,
