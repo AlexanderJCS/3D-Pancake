@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 
-import accuracy
+from . import accuracy
 
 import csv
+import os
 
 
 def plot_times(name, times) -> None:
@@ -72,7 +73,7 @@ def main():
     alg_table = accuracy.algorithm_output(c_s=0.2, verbose=True)
     times = [output["time"] for output in alg_table.values()]
 
-    with open("../data/test/areas.csv", "r") as f:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test/areas.csv"), "r") as f:
         ground_truths = list(csv.DictReader(f))
 
     filename_name_map = {row["filename"]: row["PSD name"] for row in ground_truths}

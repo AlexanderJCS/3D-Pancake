@@ -31,7 +31,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
     algorithm_output_dict = {}
 
     files = [
-        file for file in os.listdir("../data/test")
+        file for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test"))
         if file.endswith(".npy")
     ]
 
@@ -41,7 +41,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
 
         start = time.time()
         output = processing.get_area(
-            np.load(f"../data/test/{file}"),
+            np.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../data/test/{file}")),
             meta.Scale(5.03, 42.017),
             c_s=c_s,
             dist_threshold=dist_threshold,
@@ -76,7 +76,7 @@ def summary_stats(alg_output, ground_truths, compare_column_name):
     abs_diff = 0
     sum_time = 0
     
-    for file in os.listdir("../data/test"):
+    for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test")):
         if not file.endswith(".npy"):
             continue
 
@@ -343,7 +343,7 @@ def display_absolute_bar_graph(alg_output, ground_truths, compare_to) -> None:
 def main():
     # TODO: the visualization code in this entire file
 
-    with open("../data/test/areas.csv", "r") as f:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test/areas.csv"), "r") as f:
         ground_truths = list(csv.DictReader(f))
 
     alg_output = algorithm_output(c_s=0.2, dist_threshold=80, verbose=True)
