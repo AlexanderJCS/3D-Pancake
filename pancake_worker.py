@@ -190,6 +190,7 @@ class PancakeWorker(QThread):
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
         if self._gen_dragonfly_mesh:
             ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+            ors_mesh.setTitle(f"3D Pancake Output Mesh: {self._selected_roi.getTitle()}")
             ors_mesh.publish()
 
         area_output = output.area_microns()
@@ -237,6 +238,7 @@ class PancakeWorker(QThread):
 
             if self._gen_dragonfly_mesh:
                 ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+                ors_mesh.setTitle(f"3D Pancake Output Mesh: {label}")
                 ors_mesh.publish()
 
             outputs.append(output.area_microns())
