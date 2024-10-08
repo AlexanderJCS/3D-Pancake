@@ -16,7 +16,7 @@ def run():
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default
     output = processing.get_area(
         roi,
-        data.Scale(5.03, 42.017),
+        data.Scale(5, 60),
         c_s=0.2,
         visualize=True,
         visualize_unclipped=True,
