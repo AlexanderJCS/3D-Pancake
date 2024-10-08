@@ -131,8 +131,10 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         self.worker_thread = pancake_worker.PancakeWorker(
             self.selected_roi, visualize_steps, visualize_results, c_s, output_filepath,
-            self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked()
+            self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked(),
+            self.ui.chk_gen_dragonfly_mesh.isChecked()
         )
+
         self.worker_thread.update_output_label.connect(self.update_output_label)
         self.worker_thread.show_visualization.connect(self.visualize_signal)
         self.worker_thread.start()

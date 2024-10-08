@@ -86,6 +86,7 @@ def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray]) -> o
     return ors_mesh
 
 
+# todo: remove this function. there's no need for it since you can just call processing.get_area() directly
 def process_single_roi(
         roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
         vis_signal: pyqtSignal):
@@ -130,7 +131,7 @@ class PancakeWorker(QThread):
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
                  visualize_steps: bool, visualize_results: bool, c_s: float,
-                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool):
+                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool, gen_dragonfly_mesh: bool):
         """
         Initializes the Pancake Worker.
 
@@ -138,6 +139,10 @@ class PancakeWorker(QThread):
         :param visualize_steps: Whether to visualize each step
         :param visualize_results: Whether to visualize the final result
         :param c_s: The c_s value. How tight a fit the surface is to the data.
+        :param output_filepath: The output filepath for the CSV
+        :param compare_lindblad: Whether to compare the Lindblad 2005 algorithm in the output CSV
+        :param compare_lewiner: Whether to compare the Lewiner 2012 algorithm in the output CSV
+        :param gen_dragonfly_mesh: Whether to generate a Dragonfly mesh of the final result and publish it
         """
 
         super().__init__()
@@ -149,6 +154,7 @@ class PancakeWorker(QThread):
         self._output_filepath = output_filepath
         self._compare_lindblad = compare_lindblad
         self._compare_lewiner = compare_lewiner
+        self._gen_dragonfly_mesh = gen_dragonfly_mesh
 
     def _write_to_csv(
             self, labels: list[str], outputs: list[float],
@@ -172,8 +178,6 @@ class PancakeWorker(QThread):
         except PermissionError:
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
-    # todo: give this function a different name because process_single_roi is already taken by the function in the
-    #  outer scope
     def process_single_roi(self):
         scale = scale_from_roi(self._selected_roi)
         cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, scale)
@@ -183,8 +187,10 @@ class PancakeWorker(QThread):
             self._visualize_results, self._c_s, self.show_visualization
         )
 
-        ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations])
-        ors_mesh.publish()
+        # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
+        if self._gen_dragonfly_mesh:
+            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+            ors_mesh.publish()
 
         area_output = output.area_microns()
 
@@ -229,8 +235,9 @@ class PancakeWorker(QThread):
                 self._c_s, self.show_visualization
             )
 
-            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
-            ors_mesh.publish()
+            if self._gen_dragonfly_mesh:
+                ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+                ors_mesh.publish()
 
             outputs.append(output.area_microns())
 
