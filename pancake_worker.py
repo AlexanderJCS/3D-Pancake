@@ -41,10 +41,11 @@ def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np
     ], (-1 * min_indices[::-1] * scale.xyz())
 
 
-def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray]) -> ors.Mesh:
+def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scale: data.Scale) -> ors.Mesh:
     """
     Converts a processing.mesh.Mesh object to a Dragonfly ORS mesh. Used for displaying the final mesh to the user.
 
+    :param scale: The voxel spacing
     :param mesh: The mesh to convert
     :param translations: The translations made to the OBB and mesh when padding the data. Used to translate the vertices
         back to the original when creating the output mesh to visualize in Dragonfly.
@@ -54,6 +55,9 @@ def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray]) -> o
     o3d_mesh = mesh.mesh
 
     np_vertices = np.asarray(o3d_mesh.vertices)
+
+    # translate all vertices by 1/2 * scale for the axis to center the mesh at the voxel center
+    np_vertices += 0.5 * scale.xyz()
 
     if translations is not None:
         for translation in translations:
@@ -189,7 +193,7 @@ class PancakeWorker(QThread):
 
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
         if self._gen_dragonfly_mesh:
-            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
             ors_mesh.setTitle(f"3D Pancake Output Mesh: {self._selected_roi.getTitle()}")
             ors_mesh.publish()
 
@@ -237,7 +241,7 @@ class PancakeWorker(QThread):
             )
 
             if self._gen_dragonfly_mesh:
-                ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
+                ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
                 ors_mesh.setTitle(f"3D Pancake Output Mesh: {label}")
                 ors_mesh.publish()
 
