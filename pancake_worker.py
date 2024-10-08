@@ -229,7 +229,7 @@ class PancakeWorker(QThread):
                 self._c_s, self.show_visualization
             )
 
-            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations])
+            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations])
             ors_mesh.publish()
 
             outputs.append(output.area_microns())
