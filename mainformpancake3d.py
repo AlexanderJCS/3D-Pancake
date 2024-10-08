@@ -33,8 +33,6 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.ui.chk_visualize_steps.stateChanged.connect(self.on_chk_visualize_steps_stateChanged)
 
         self.ui.line_edit_c_s.setValidator(QtGui.QDoubleValidator(0, 100, 6))
-        self.ui.line_edit_xy_scale.setValidator(QtGui.QDoubleValidator(0, 10000, 6))
-        self.ui.line_edit_z_scale.setValidator(QtGui.QDoubleValidator(0, 10000, 6))
 
         WorkingContext.registerOrsWidget(
             "Pancake3D_eae430b521c411efa291f83441a96bd5",
@@ -123,15 +121,6 @@ class MainFormPancake3D(OrsAbstractWindow):
         """
         Processes the selected ROI when pressed
         """
-        
-        # TODO: Add error handling for invalid scale input (e.g., negative values)
-
-        xy_scale = float(self.ui.line_edit_xy_scale.text())
-        z_scale = float(self.ui.line_edit_z_scale.text())
-
-        if xy_scale == 0 or z_scale == 0:
-            self.ui.label_output.setText("Scale must be nonzero")
-            return
 
         c_s = float(self.ui.line_edit_c_s.text())
 
@@ -141,7 +130,7 @@ class MainFormPancake3D(OrsAbstractWindow):
         output_filepath = self.ui.line_edit_filepath.text()
 
         self.worker_thread = pancake_worker.PancakeWorker(
-            self.selected_roi, data.Scale(xy_scale, z_scale), visualize_steps, visualize_results, c_s, output_filepath,
+            self.selected_roi, visualize_steps, visualize_results, c_s, output_filepath,
             self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked()
         )
         self.worker_thread.update_output_label.connect(self.update_output_label)

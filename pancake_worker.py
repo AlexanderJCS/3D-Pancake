@@ -109,6 +109,17 @@ def process_single_roi(
     )
 
 
+def scale_from_roi(roi: ors.ROI) -> data.Scale:
+    """
+    Gets the scale from the ROI.
+
+    :param roi: The ROI to get the scale from.
+    :return: The scale of the ROI.
+    """
+
+    return data.Scale(roi.getXSpacing() * 1e9, roi.getZSpacing() * 1e9)
+
+
 class PancakeWorker(QThread):
     """
     The Pancake Worker class. Allows the surface area to be processed in the background.
@@ -118,13 +129,12 @@ class PancakeWorker(QThread):
     show_visualization = pyqtSignal(functools.partial)
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
-                 scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
+                 visualize_steps: bool, visualize_results: bool, c_s: float,
                  output_filepath: str, compare_lindblad: bool, compare_lewiner: bool):
         """
         Initializes the Pancake Worker.
 
         :param selected_roi: The ROI or MultiROI to process. If none, the worker will not run.
-        :param scale: The scale of the data
         :param visualize_steps: Whether to visualize each step
         :param visualize_results: Whether to visualize the final result
         :param c_s: The c_s value. How tight a fit the surface is to the data.
@@ -133,7 +143,6 @@ class PancakeWorker(QThread):
         super().__init__()
 
         self._selected_roi = selected_roi
-        self._scale = scale
         self._visualize_steps = visualize_steps
         self._visualize_results = visualize_results
         self._c_s = c_s
@@ -163,11 +172,14 @@ class PancakeWorker(QThread):
         except PermissionError:
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
+    # todo: give this function a different name because process_single_roi is already taken by the function in the
+    #  outer scope
     def process_single_roi(self):
-        cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, self._scale)
+        scale = scale_from_roi(self._selected_roi)
+        cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, scale)
 
         output = process_single_roi(
-            cropped_roi_arr, self._scale, self._visualize_steps,
+            cropped_roi_arr, scale, self._visualize_steps,
             self._visualize_results, self._c_s, self.show_visualization
         )
 
@@ -176,12 +188,13 @@ class PancakeWorker(QThread):
 
         area_output = output.area_microns()
 
+        # todo: code cleanup: remove duplicate code between single ROI and multi ROI about lindblad and lewiner areas
         self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
         lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
             if self._compare_lindblad else None
 
         self.update_output_label.emit(f"Calculating Lewiner 2012 area...")
-        lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale)] \
+        lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, scale)] \
             if self._compare_lewiner else None
 
         self.update_output_label.emit(f"Done. Area: {area_output:.6f} μm²")
@@ -200,17 +213,19 @@ class PancakeWorker(QThread):
         for label in range(1, self._selected_roi.getLabelCount() + 1):
             self.update_output_label.emit(f"Loading PSD {label}/{self._selected_roi.getLabelCount()}")
 
-            copy_roi = ors.ROI()
+            copy_roi: ors.ROI = ors.ROI()
             copy_roi.copyShapeFromStructuredGrid(self._selected_roi)
             self._selected_roi.addToVolumeROI(copy_roi, label)
+            labels.append(label)
 
             self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
-            labels.append(label)
-            cropped_roi_arr, original_translations = get_cropped_roi_arr(copy_roi, self._scale)
+            scale = scale_from_roi(copy_roi)
+
+            cropped_roi_arr, original_translations = get_cropped_roi_arr(copy_roi, scale)
 
             output = process_single_roi(
-                cropped_roi_arr, self._scale, self._visualize_steps, self._visualize_results,
+                cropped_roi_arr, scale, self._visualize_steps, self._visualize_results,
                 self._c_s, self.show_visualization
             )
 
@@ -227,7 +242,7 @@ class PancakeWorker(QThread):
             if self._compare_lewiner:
                 self.update_output_label.emit(
                     f"Calculating Lewiner 2012 area for PSD {label}/{self._selected_roi.getLabelCount()}...")
-                lewiner_2012.append(other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale))
+                lewiner_2012.append(other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, scale))
 
             copy_roi.deleteObject()
 
@@ -235,8 +250,6 @@ class PancakeWorker(QThread):
 
         if self._output_filepath == "":
             return
-
-        print(lindblad_2005, lewiner_2012)
 
         self._write_to_csv(labels, outputs, lindblad_2005, lewiner_2012)
 

@@ -58,38 +58,6 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_xy_scale">
-       <property name="text">
-        <string>XY Scale (nm):</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="line_edit_xy_scale">
-       <property name="text">
-        <string>5.03</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_z_scale">
-       <property name="text">
-        <string>Z Scale (nm):</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="line_edit_z_scale">
-       <property name="text">
-        <string>42.017</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
