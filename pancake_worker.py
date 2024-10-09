@@ -14,17 +14,14 @@ from .processing import processing
 from . import other_algorithms
 
 
-# Since the visualization signal cannot be pickled, it cannot be passed to a multiprocessing process. This is a
-#  workaround. It's not the most elegant solution, but it works.
-global_vis_signal = None
-
-
-def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
+def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np.ndarray]:
     """
     Gets the cropped ROI array. The ROI is cropped to the bounding box of the ROI.
 
+    :param scale: The scale of each voxel
     :param roi: The ROI to crop
-    :return: The cropped ROI array
+    :return: tuple(The cropped ROI array, the transformations required to translate the vertices back to the original
+              in world space)
     """
 
     roi_arr = roi.getAsNDArray()
@@ -41,12 +38,64 @@ def get_cropped_roi_arr(roi: ors.ROI) -> np.ndarray:
         min_indices[0]:max_indices[0] + 1,
         min_indices[1]:max_indices[1] + 1,
         min_indices[2]:max_indices[2] + 1
-    ]
+    ], (-1 * min_indices[::-1] * scale.xyz())
 
 
-def process_single_roi(
-        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool,visualize_results: bool, c_s: float):
+def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scale: data.Scale) -> ors.Mesh:
     """
+    Converts a processing.mesh.Mesh object to a Dragonfly ORS mesh. Used for displaying the final mesh to the user.
+
+    :param scale: The voxel spacing
+    :param mesh: The mesh to convert
+    :param translations: The translations made to the OBB and mesh when padding the data. Used to translate the vertices
+        back to the original when creating the output mesh to visualize in Dragonfly.
+    :return: The Dragonfly ORS mesh
+    """
+
+    o3d_mesh = mesh.mesh
+
+    np_vertices = np.asarray(o3d_mesh.vertices)
+
+    # translate all vertices by 1/2 * scale for the axis to center the mesh at the voxel center
+    np_vertices += 0.5 * scale.xyz()
+
+    if translations is not None:
+        for translation in translations:
+            np_vertices -= translation
+
+    np_vertices = np_vertices.flatten()
+
+    np_triangles = np.asarray(o3d_mesh.triangles).flatten()
+
+    # divide vertices by 1e9 to get meters instead of nanometers
+    np_vertices = np_vertices / 1e9
+
+    ors_mesh = ors.FaceVertexMesh()
+    ors_mesh.setTSize(1)  # set the time dimension
+
+    # todo: code cleanup - instead of doing this weird for loop thing, flatten np_vertices and np_triangles
+
+    ors_mesh_vertices = ors_mesh.getVertices(0)
+    ors_mesh_vertices.setSize(len(np_vertices) * 3)  # multiply by 3 to account for x, y, z
+
+    for i in range(len(np_vertices)):
+        ors_mesh_vertices.atPut(i, np_vertices[i])
+
+    ors_triangles = ors_mesh.getEdges(0)
+    ors_triangles.setSize(len(np_triangles) * 3)  # multiply by 3 to account for 3 vertices per triangle
+
+    for i in range(len(np_triangles)):
+        ors_triangles.atPut(i, np_triangles[i])
+
+    return ors_mesh
+
+
+# todo: remove this function. there's no need for it since you can just call processing.get_area() directly
+def process_single_roi(
+        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
+        vis_signal: pyqtSignal):
+    """
+    :param vis_signal: The signal to visualize the data
     :param roi_arr_cropped: The cropped ROI array
     :param scale: The scale of the data.
     :param visualize_steps: Whether to visualize each step.
@@ -55,17 +104,25 @@ def process_single_roi(
     :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
     """
 
-    # Data processing
-    output = processing.get_area(
+    return processing.get_area(
         roi_arr_cropped,
         scale=scale,
         visualize=visualize_steps,
         visualize_end=visualize_results,
         c_s=c_s,
-        visualize_signal=global_vis_signal
+        visualize_signal=vis_signal
     )
 
-    return output.area_nm / 1e6  # area in um^2
+
+def scale_from_roi(roi: ors.ROI) -> data.Scale:
+    """
+    Gets the scale from the ROI.
+
+    :param roi: The ROI to get the scale from.
+    :return: The scale of the ROI.
+    """
+
+    return data.Scale(roi.getXSpacing() * 1e9, roi.getZSpacing() * 1e9)
 
 
 class PancakeWorker(QThread):
@@ -77,31 +134,31 @@ class PancakeWorker(QThread):
     show_visualization = pyqtSignal(functools.partial)
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
-                 scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
-                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool):
+                 visualize_steps: bool, visualize_results: bool, c_s: float,
+                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool, gen_dragonfly_mesh: bool):
         """
         Initializes the Pancake Worker.
 
         :param selected_roi: The ROI or MultiROI to process. If none, the worker will not run.
-        :param scale: The scale of the data
         :param visualize_steps: Whether to visualize each step
         :param visualize_results: Whether to visualize the final result
         :param c_s: The c_s value. How tight a fit the surface is to the data.
+        :param output_filepath: The output filepath for the CSV
+        :param compare_lindblad: Whether to compare the Lindblad 2005 algorithm in the output CSV
+        :param compare_lewiner: Whether to compare the Lewiner 2012 algorithm in the output CSV
+        :param gen_dragonfly_mesh: Whether to generate a Dragonfly mesh of the final result and publish it
         """
-        global global_vis_signal
 
         super().__init__()
 
         self._selected_roi = selected_roi
-        self._scale = scale
         self._visualize_steps = visualize_steps
         self._visualize_results = visualize_results
         self._c_s = c_s
         self._output_filepath = output_filepath
         self._compare_lindblad = compare_lindblad
         self._compare_lewiner = compare_lewiner
-
-        global_vis_signal = self.show_visualization
+        self._gen_dragonfly_mesh = gen_dragonfly_mesh
 
     def _write_to_csv(
             self, labels: list[str], outputs: list[float],
@@ -126,25 +183,37 @@ class PancakeWorker(QThread):
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
     def process_single_roi(self):
-        cropped_roi_arr = get_cropped_roi_arr(self._selected_roi)
+        scale = scale_from_roi(self._selected_roi)
+        cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, scale)
 
-        output = process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                    self._visualize_results, self._c_s)
+        output = process_single_roi(
+            cropped_roi_arr, scale, self._visualize_steps,
+            self._visualize_results, self._c_s, self.show_visualization
+        )
 
+        # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
+        if self._gen_dragonfly_mesh:
+            ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
+            ors_mesh.setTitle(f"3D Pancake Output Mesh: {self._selected_roi.getTitle()}")
+            ors_mesh.publish()
+
+        area_output = output.area_microns()
+
+        # todo: code cleanup: remove duplicate code between single ROI and multi ROI about lindblad and lewiner areas
         self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
         lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
             if self._compare_lindblad else None
 
         self.update_output_label.emit(f"Calculating Lewiner 2012 area...")
-        lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale)] \
+        lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, scale)] \
             if self._compare_lewiner else None
 
-        self.update_output_label.emit(f"Done. Area: {output:.6f} μm²")
+        self.update_output_label.emit(f"Done. Area: {area_output:.6f} μm²")
 
         if self._output_filepath == "":
             return
 
-        self._write_to_csv([self._selected_roi.getTitle()], [output], lindblad_2005, lewiner_2012)
+        self._write_to_csv([self._selected_roi.getTitle()], [area_output], lindblad_2005, lewiner_2012)
 
     def process_multi_roi(self):
         labels = []
@@ -155,16 +224,28 @@ class PancakeWorker(QThread):
         for label in range(1, self._selected_roi.getLabelCount() + 1):
             self.update_output_label.emit(f"Loading PSD {label}/{self._selected_roi.getLabelCount()}")
 
-            copy_roi = ors.ROI()
+            copy_roi: ors.ROI = ors.ROI()
             copy_roi.copyShapeFromStructuredGrid(self._selected_roi)
             self._selected_roi.addToVolumeROI(copy_roi, label)
+            labels.append(label)
 
             self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
-            labels.append(label)
-            cropped_roi_arr = get_cropped_roi_arr(copy_roi)
-            outputs.append(process_single_roi(cropped_roi_arr, self._scale, self._visualize_steps,
-                                              self._visualize_results, self._c_s))
+            scale = scale_from_roi(copy_roi)
+
+            cropped_roi_arr, original_translations = get_cropped_roi_arr(copy_roi, scale)
+
+            output = process_single_roi(
+                cropped_roi_arr, scale, self._visualize_steps, self._visualize_results,
+                self._c_s, self.show_visualization
+            )
+
+            if self._gen_dragonfly_mesh:
+                ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
+                ors_mesh.setTitle(f"3D Pancake Output Mesh: {label}")
+                ors_mesh.publish()
+
+            outputs.append(output.area_microns())
 
             if self._compare_lindblad:
                 self.update_output_label.emit(
@@ -174,7 +255,7 @@ class PancakeWorker(QThread):
             if self._compare_lewiner:
                 self.update_output_label.emit(
                     f"Calculating Lewiner 2012 area for PSD {label}/{self._selected_roi.getLabelCount()}...")
-                lewiner_2012.append(other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, self._scale))
+                lewiner_2012.append(other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, scale))
 
             copy_roi.deleteObject()
 
@@ -182,8 +263,6 @@ class PancakeWorker(QThread):
 
         if self._output_filepath == "":
             return
-
-        print(lindblad_2005, lewiner_2012)
 
         self._write_to_csv(labels, outputs, lindblad_2005, lewiner_2012)
 
