@@ -11,10 +11,9 @@ Please read the [installation instructions](./INSTALLATION.md) for information o
 
 Usage instructions will be written as the plugin is developed.
 
-
 ## Run Configurations
 
-If you plan on developing this plugin, you will most likely want to run some modules. Below show the PyCharm run configurations for different scripts:
+If you plan on developing this plugin, you will most likely want to run some test scripts. Below show the PyCharm run configurations for different scripts. Before doing this, make sure to follow Dragonfly's [PyCharm setup guide for plugin development](https://dev.theobjects.com/dragonfly_4_0_release/Documentation/SetupForDevelopmentWithPyCharm/setupfordevelopmentwithpycharm.html).
 
 ### Quick Run
 ![image](https://github.com/user-attachments/assets/b6380e15-d80d-4d00-a994-35d4e6b99636)
