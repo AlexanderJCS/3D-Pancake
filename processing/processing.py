@@ -186,14 +186,16 @@ def get_area(
                 distance_map, scale, "Step H: Deformed Mesh",
                 center=center_point,
                 obb=obb,
-                psd_mesh=psd_mesh
+                psd_mesh=psd_mesh,
+                vectors=projected_gradient
             ))
         else:
             visual.vis_3d(
                 distance_map, scale, "Step H: Deformed Mesh",
                 center=center_point,
                 obb=obb,
-                psd_mesh=psd_mesh
+                psd_mesh=psd_mesh,
+                vectors=projected_gradient
             )
 
     # Step I: move the vertices into the nearest OBB
