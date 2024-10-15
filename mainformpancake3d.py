@@ -15,7 +15,6 @@ from typing import Union
 import threading
 import os
 
-from .processing import data
 from . import pancake_worker
 
 

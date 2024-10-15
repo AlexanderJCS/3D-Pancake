@@ -11,7 +11,11 @@ from . import center
 from . import mesh
 from . import vectors
 
-import visual
+# Workaround since running Dragonfly with OrsMinimalStartupScript.py causes the package path to be different
+if __package__.count(".") == 0:
+    import visual
+else:
+    from .. import visual
 
 
 @dataclass(frozen=True)

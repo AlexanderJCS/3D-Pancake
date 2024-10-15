@@ -4,9 +4,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
 
-from processing import data
-from processing import bounding_box
-from processing import mesh
+# Workaround since running Dragonfly with OrsMinimalStartupScript.py causes the package path to be different
+if __package__.count(".") == 0:
+    from processing import data
+    from processing import bounding_box
+    from processing import mesh
+else:
+    from ..processing import data
+    from ..processing import bounding_box
+    from ..processing import mesh
 
 from typing import Optional
 

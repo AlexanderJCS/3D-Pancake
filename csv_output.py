@@ -1,5 +1,4 @@
 
-
 def write_csv(csv_filepath: str, columns: dict[str, list]) -> None:
     """
     Writes the names and surface ares of the PSDs to a CSV file.
