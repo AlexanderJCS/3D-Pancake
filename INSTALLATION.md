@@ -12,11 +12,11 @@ If you have any problems with the installation, please contact Alex or create a 
 
 **Step 1:** Close Dragonfly
 
-**Step 2**: Go to <https://www.github.com/alexanderjcs/3d-pancake>
+**Step 2**: Go to the [releases page](https://github.com/AlexanderJCS/3D-Pancake/releases)
 
-**Step 3:** Click on the "Code" button -\> Download Zip
+**Step 3:** Download the source code of the latest release (at the top of the releases page). Ensure to download the *zip* source code, not *tar.gz*.
 
-![Download Zip Instructions](docs_media/image1.png)
+![image](https://github.com/user-attachments/assets/bf65d5f6-a4d4-44dc-9f0f-5b1554c6b718)
 
 **Step 4:** Go to the downloads folder and extract the zip file
 
