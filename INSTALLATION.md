@@ -28,8 +28,8 @@ version (typically `Dragonfly[YOUR_VERSION]`)
 
 ![Find Dragonfly Version Step](docs_media/image3.png)
 
-**Step 6:** Go into the Dragonfly folder for your version -\>
-pythonAllUserExtensions -\> Plugins. (The entire path should look like
+**Step 6:** Go into the Dragonfly folder for your version ->
+pythonAllUserExtensions -> Plugins. (The entire path should look like
 `C:/ProgramData/ORS/Dragonfly/[YOUR_VERSION]/pythonAllUsersExtensions/Plugins`)
 
 ![Filepath Image](docs_media/image4.png)
@@ -67,7 +67,7 @@ show.
 **Step 9:** Close Dragonfly
 
 **Step 10:** Go to `C:/ProgramData/ORS` -> your Dragonfly installation
--\> `Anaconda3` and copy the filepath
+-> `Anaconda3` and copy the filepath
 
 ![Filepath to Anaconda3](docs_media/image8.png)
 
