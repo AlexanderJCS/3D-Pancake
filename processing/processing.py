@@ -82,7 +82,7 @@ def get_area(
         if visualize_signal:
             visualize_signal.emit(functools.partial(
                 visual.vis_3d,
-                formatted, scale, "Step A: Formatted Data",
+                formatted, scale, "Step B: Formatted Data",
                 obb=obb
             ))
         else:
