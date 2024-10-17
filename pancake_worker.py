@@ -90,30 +90,6 @@ def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scal
     return ors_mesh
 
 
-# todo: remove this function. there's no need for it since you can just call processing.get_area() directly
-def process_single_roi(
-        roi_arr_cropped: np.ndarray, scale: data.Scale, visualize_steps: bool, visualize_results: bool, c_s: float,
-        vis_signal: pyqtSignal):
-    """
-    :param vis_signal: The signal to visualize the data
-    :param roi_arr_cropped: The cropped ROI array
-    :param scale: The scale of the data.
-    :param visualize_steps: Whether to visualize each step.
-    :param visualize_results: Whether to visualize the final result.
-    :param c_s: The c_s value. How tight a fit the surface is to the data.
-    :return: The area of the ROI in um^2. If the ROI is empty, -1 is returned.
-    """
-
-    return processing.get_area(
-        roi_arr_cropped,
-        scale=scale,
-        visualize=visualize_steps,
-        visualize_end=visualize_results,
-        c_s=c_s,
-        visualize_signal=vis_signal
-    )
-
-
 def scale_from_roi(roi: ors.ROI) -> data.Scale:
     """
     Gets the scale from the ROI.
@@ -186,9 +162,9 @@ class PancakeWorker(QThread):
         scale = scale_from_roi(self._selected_roi)
         cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, scale)
 
-        output = process_single_roi(
-            cropped_roi_arr, scale, self._visualize_steps,
-            self._visualize_results, self._c_s, self.show_visualization
+        output = processing.get_area(
+            raw_data=cropped_roi_arr, scale=scale, visualize=self._visualize_steps,
+            visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization
         )
 
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
@@ -235,9 +211,9 @@ class PancakeWorker(QThread):
 
             cropped_roi_arr, original_translations = get_cropped_roi_arr(copy_roi, scale)
 
-            output = process_single_roi(
-                cropped_roi_arr, scale, self._visualize_steps, self._visualize_results,
-                self._c_s, self.show_visualization
+            output = processing.get_area(
+                raw_data=cropped_roi_arr, scale=scale, visualize=self._visualize_steps,
+                visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization
             )
 
             if self._gen_dragonfly_mesh:

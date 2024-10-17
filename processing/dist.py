@@ -4,7 +4,7 @@ from scipy import ndimage
 from .data import meta
 
 
-def gen_dist_map(data: np.ndarray, scale: meta.Scale, downsample: bool) -> np.ndarray:
+def gen_dist_map(data: np.ndarray, scale: meta.Scale) -> np.ndarray:
     # add padding around data to prevent edges not counting as 0
     data = np.pad(data, 1, mode="constant")
 
@@ -12,11 +12,11 @@ def gen_dist_map(data: np.ndarray, scale: meta.Scale, downsample: bool) -> np.nd
     #  and then combine them to get a 3D distance map
 
     dist_map_positives = ndimage.distance_transform_edt(
-        data, sampling=scale.zyx() if not downsample else None
+        data, sampling=scale.zyx()
     )
 
     dist_map_negatives = ndimage.distance_transform_edt(
-        ~data, sampling=scale.zyx() if not downsample else None  # ~data is bitwise NOT, flipping booleans
+        ~data, sampling=scale.zyx()  # ~data is bitwise NOT, flipping booleans
     )
 
     # remove padding from the distance maps
