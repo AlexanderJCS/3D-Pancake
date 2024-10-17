@@ -17,13 +17,12 @@ from processing.data import meta
 from visual import figure_utils
 
 
-def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsample=False, verbose=False):
+def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=False):
     """
     Calculates the algorithms output.
     :param c_s: The constant for the sigma formula
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
-    :param downsample: Whether to downsample the data to the z axis scale
     :param verbose: Whether to print progress
     :return: Dictionary: {filename: {"area": algorithm_area, "time": time_taken}
     """
@@ -45,7 +44,6 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, downsampl
             meta.Scale(5.03, 42.017),
             c_s=c_s,
             dist_threshold=dist_threshold,
-            downsample=downsample,
             visualize=False,
             visualize_end=False
         )
@@ -341,7 +339,7 @@ def display_absolute_bar_graph(alg_output, ground_truths, compare_to) -> None:
 
 
 def main():
-    # TODO: the visualization code in this entire file
+    # TODO: the visualization code in this entire file is repeated and kind of messy
 
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test/areas.csv"), "r") as f:
         ground_truths = list(csv.DictReader(f))

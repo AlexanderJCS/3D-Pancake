@@ -210,6 +210,16 @@ class Mesh:
         return max_error if max_error != 0 else np.inf
 
     def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
+        """
+        Clips all vertices that are outside the boolean data by a certain distance threshold.
+
+        :param bool_data: The boolean data to clip the vertices to
+        :param scale: The voxel spacing
+        :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
+                                 equal to max(scale.xy, scale.z) / 1.5
+        :return: None
+        """
+
         points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
         vertices = np.asarray(self.mesh.vertices)
 
@@ -221,7 +231,7 @@ class Mesh:
 
         # Find vertices that need to be removed
         if dist_threshold is None:
-            dist_threshold = max(scale.xy, scale.z)
+            dist_threshold = max(scale.xy, scale.z) / 1.5
 
         indices_to_remove = np.where(distances > dist_threshold)[0]
 
