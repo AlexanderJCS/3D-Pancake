@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>440</height>
+    <height>475</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>420</width>
-    <height>440</height>
+    <height>475</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -52,6 +52,24 @@
       <widget class="QLineEdit" name="line_edit_c_s">
        <property name="text">
         <string>0.67</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_vertex_deletion_threshold">
+       <property name="text">
+        <string>Vertex deletion threshold (nm)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="line_edit_vertex_deletion_threshold">
+       <property name="placeholderText">
+        <string>Optional: Default Value = Z Spacing / 1.5</string>
        </property>
       </widget>
      </item>
@@ -158,7 +176,7 @@
         <string>Visualize each step of the algorithm in a new window. Not recommended for regular use or with processing MultiROIs.</string>
        </property>
        <property name="text">
-        <string>Visualize Steps</string>
+        <string>Visualize steps</string>
        </property>
       </widget>
      </item>
@@ -168,7 +186,7 @@
         <string>Visualize the final step of the algorithm in a new window. Not recommended for regular use or with processing MultiROIs.</string>
        </property>
        <property name="text">
-        <string>Visualize Final Step</string>
+        <string>Visualize final step</string>
        </property>
       </widget>
      </item>

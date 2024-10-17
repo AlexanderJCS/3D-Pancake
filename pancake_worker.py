@@ -111,7 +111,8 @@ class PancakeWorker(QThread):
 
     def __init__(self, selected_roi: Union[None, ors.ROI, ors.MultiROI],
                  visualize_steps: bool, visualize_results: bool, c_s: float,
-                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool, gen_dragonfly_mesh: bool):
+                 output_filepath: str, compare_lindblad: bool, compare_lewiner: bool, gen_dragonfly_mesh: bool,
+                 dist_threshold: typing.Optional[float] = None):
         """
         Initializes the Pancake Worker.
 
@@ -123,6 +124,7 @@ class PancakeWorker(QThread):
         :param compare_lindblad: Whether to compare the Lindblad 2005 algorithm in the output CSV
         :param compare_lewiner: Whether to compare the Lewiner 2012 algorithm in the output CSV
         :param gen_dragonfly_mesh: Whether to generate a Dragonfly mesh of the final result and publish it
+        :param dist_threshold: The distance threshold to clip each vertex in the final step.
         """
 
         super().__init__()
@@ -135,6 +137,7 @@ class PancakeWorker(QThread):
         self._compare_lindblad = compare_lindblad
         self._compare_lewiner = compare_lewiner
         self._gen_dragonfly_mesh = gen_dragonfly_mesh
+        self._dist_threshold = dist_threshold
 
     def _write_to_csv(
             self, labels: list[str], outputs: list[float],
@@ -164,7 +167,8 @@ class PancakeWorker(QThread):
 
         output = processing.get_area(
             raw_data=cropped_roi_arr, scale=scale, visualize=self._visualize_steps,
-            visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization
+            visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization,
+            dist_threshold=self._dist_threshold
         )
 
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
@@ -213,7 +217,8 @@ class PancakeWorker(QThread):
 
             output = processing.get_area(
                 raw_data=cropped_roi_arr, scale=scale, visualize=self._visualize_steps,
-                visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization
+                visualize_end=self._visualize_results, c_s=self._c_s, visualize_signal=self.show_visualization,
+                dist_threshold=self._dist_threshold
             )
 
             if self._gen_dragonfly_mesh:

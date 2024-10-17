@@ -32,6 +32,7 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.ui.chk_visualize_steps.stateChanged.connect(self.on_chk_visualize_steps_stateChanged)
 
         self.ui.line_edit_c_s.setValidator(QtGui.QDoubleValidator(0, 100, 6))
+        self.ui.line_edit_vertex_deletion_threshold.setValidator(QtGui.QDoubleValidator(0, 100, 6))
 
         WorkingContext.registerOrsWidget(
             "Pancake3D_eae430b521c411efa291f83441a96bd5",
@@ -123,6 +124,9 @@ class MainFormPancake3D(OrsAbstractWindow):
 
         c_s = float(self.ui.line_edit_c_s.text())
 
+        vertex_threshold_text = self.ui.line_edit_vertex_deletion_threshold.text()
+        vertex_threshold = float(vertex_threshold_text) if vertex_threshold_text else None
+
         visualize_steps = self.ui.chk_visualize_steps.isChecked()
         visualize_results = self.ui.chk_visualize_results.isChecked()
 
@@ -131,7 +135,7 @@ class MainFormPancake3D(OrsAbstractWindow):
         self.worker_thread = pancake_worker.PancakeWorker(
             self.selected_roi, visualize_steps, visualize_results, c_s, output_filepath,
             self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked(),
-            self.ui.chk_gen_dragonfly_mesh.isChecked()
+            self.ui.chk_gen_dragonfly_mesh.isChecked(), vertex_threshold
         )
 
         self.worker_thread.update_output_label.connect(self.update_output_label)
