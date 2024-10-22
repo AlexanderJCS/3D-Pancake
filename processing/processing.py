@@ -152,7 +152,7 @@ def get_area(
                    center_point=center_point, psd_mesh=psd_mesh, vectors_arr=projected_gradient)
 
     # Step H: deform the mesh
-    while psd_mesh.error() > 0.1:
+    while psd_mesh.error() > 0.01:
         psd_mesh.deform(projected_gradient, scale)
 
     visualize_step(visualize or visualize_unclipped, visualize_signal, "Step H: Deformed Mesh", distance_map,

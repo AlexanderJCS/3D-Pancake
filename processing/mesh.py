@@ -137,7 +137,9 @@ class Mesh:
 
     def _append_prev_vertices(self, vertices: np.ndarray):
         self.prev_vertices.append(vertices.copy())
-        if len(self.prev_vertices) > self.MAX_PREV_VERTICES:
+
+        # Remove elements of prev_vertices if it exceeds the maximum length
+        while len(self.prev_vertices) > self.MAX_PREV_VERTICES:
             self.prev_vertices.pop(0)
 
     def gen_rgi(self, scale: data.Scale, projected_gradient: np.ndarray) -> None:
@@ -150,10 +152,10 @@ class Mesh:
         :param projected_gradient: The gradient data
         """
 
-        # Create x y z points for a regular grid interpolator
-        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2])
-        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1])
-        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0])
+        # Create x y z points for the regular grid interpolator
+        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2]) - scale.xy / 2
+        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1]) - scale.xy / 2
+        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0]) - scale.z / 2
 
         # Interpolate the gradient values
         self.rgi = interpolate.RegularGridInterpolator(
@@ -173,16 +175,16 @@ class Mesh:
 
         self._append_prev_vertices(vertices)
 
-        vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
-
         if self.rgi is None:
             self.gen_rgi(scale, projected_gradient)
 
+        vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
         gradients = self.rgi(vertices)
 
         # Create a mask to not do math on NaN values to avoid errors
+        # Ideally there should be no NaN values but just in case
         nan_mask = np.isnan(gradients).any(axis=1)
-        vertices[~nan_mask] += gradients[~nan_mask]
+        vertices[~nan_mask] += gradients[~nan_mask] * 5
         self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
 
     def error(self) -> float:
@@ -198,16 +200,15 @@ class Mesh:
 
         # e = sigma(i = 1, k) ((p_i a - p_i b)) / k
         # aka, mean euclidian distance shifted per vertex
-        max_error = 0
+        sum_error = 0
 
         vertices = np.asarray(self.mesh.vertices)
         for prev_vertices_item in self.prev_vertices:
-            error = np.mean(np.linalg.norm(vertices - prev_vertices_item, axis=1))
+            sum_error += np.mean(np.linalg.norm(vertices - prev_vertices_item, axis=1))
 
-            if error > max_error:
-                max_error = error
+        mean_error = sum_error / self.MAX_PREV_VERTICES
 
-        return max_error if max_error != 0 else np.inf
+        return mean_error
 
     def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
         """
