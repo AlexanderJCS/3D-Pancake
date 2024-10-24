@@ -2,6 +2,7 @@ from typing import Optional
 
 from . import bounding_box
 from . import data
+from . import vectors
 
 import open3d as o3d
 import numpy as np
@@ -237,6 +238,81 @@ class Mesh:
         indices_to_remove = np.where(distances > dist_threshold)[0]
 
         self.mesh.remove_vertices_by_index(indices_to_remove)
+
+    def bend(self, projected_gradient: np.array, scale: data.Scale) -> None:
+        """
+        Bends the mesh so the vertices are set where the gradient converges.
+        :param projected_gradient: The projected gradient
+        :param scale: The voxel spacing
+        """
+
+        gradient_dir = self.bounding_box.get_normal()
+        new_vertices = np.asarray(self.mesh.vertices)
+
+        # get the dot products of all vectors in projected gradient with the gradient direction vector, returning a 1D
+        # value for each vertex determining the direction of the gradient
+        magnitudes = np.dot(projected_gradient, gradient_dir)
+
+        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2]) - scale.xy / 2
+        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1]) - scale.xy / 2
+        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0]) - scale.z / 2
+
+        rgi = interpolate.RegularGridInterpolator(
+            (z, y, x),
+            magnitudes,
+            bounds_error=False,
+            fill_value=np.nan,
+            method="linear"
+        )
+
+        for i, vertex in enumerate(new_vertices):
+            """
+            Below is a dumb approach but it works for the proof of concept
+            
+            1. Identify the point projected on the gradient direction vector, putting it in that coordinate system
+            2. Traverse all x values in the new coordinate system, until it flips direction or reaches the edge
+            3. Set the vertex to the x value where the gradient direction flips/whose absolute value is minimum
+            """
+
+            original_magnitude = rgi(vertex)
+            # project the vertex onto the gradient direction vector
+            vertex_projected = vectors.project_points(np.array([vertex]), gradient_dir)[0]
+
+            found_flip = False
+
+            # first go in +x direction until one of the two criteria are met
+            while True:
+                vertex_projected[0] += scale.xy
+                new_magnitude = rgi(vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0])
+
+                if np.sign(new_magnitude) != np.sign(original_magnitude):
+                    found_flip = True
+                    break
+
+                if np.isnan(new_magnitude):
+                    print("nan")
+                    break
+
+            if found_flip:
+                new_vertices[i] = vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0]
+                print("yay")
+
+            # if no flip was found, go in -x direction until one of the two criteria are met
+            vertex_projected = vectors.project_points(np.array([vertex]), np.array([1, 0, 0]))[0]
+
+            while True:
+                vertex_projected[0] -= scale.xy
+                new_magnitude = rgi(vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0])
+
+                if np.sign(new_magnitude) != np.sign(original_magnitude):
+                    print("yay2")
+                    break
+
+                if np.isnan(new_magnitude):
+                    print("hello there")
+                    break
+
+            new_vertices[i] = vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0]
 
     def area(self) -> float:
         """
