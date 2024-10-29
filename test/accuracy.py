@@ -38,7 +38,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=F
         if verbose:
             print(f"Processing file {i + 1}/{len(files)}: {file}")
 
-        start = time.time()
+        start = time.perf_counter()
         output = processing.get_area(
             np.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"../data/test/{file}")),
             meta.Scale(5.03, 42.017),
@@ -47,7 +47,7 @@ def algorithm_output(c_s=0.67, dist_threshold: Optional[float] = None, verbose=F
             visualize=False,
             visualize_end=False
         )
-        end = time.time()
+        end = time.perf_counter()
 
         algorithm_area = output.area_nm / 1e6
 
