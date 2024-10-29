@@ -274,45 +274,46 @@ class Mesh:
             3. Set the vertex to the x value where the gradient direction flips/whose absolute value is minimum
             """
 
-            original_magnitude = rgi(vertex)
-            # project the vertex onto the gradient direction vector
-            vertex_projected = vectors.project_points(np.array([vertex]), gradient_dir)[0]
+            if i % 100 == 0:
+                print(f"{i}/{len(new_vertices)}")
 
+            original_magnitude = rgi(vertex[::-1])
             found_flip = False
 
             # first go in +x direction until one of the two criteria are met
+            loop_vertex = vertex
             while True:
-                vertex_projected[0] += scale.xy
-                new_magnitude = rgi(vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0])
+                loop_vertex += gradient_dir * 4
+                new_magnitude = rgi(loop_vertex[::-1])
+
+                if np.isnan(new_magnitude):
+                    break
 
                 if np.sign(new_magnitude) != np.sign(original_magnitude):
                     found_flip = True
                     break
 
+            if found_flip:
+                new_vertices[i] = loop_vertex
+                continue
+
+            # if no flip was found, go in -x direction until one of the two criteria are met
+            loop_vertex = vertex
+            while True:
+                loop_vertex -= gradient_dir * 4
+
+                new_magnitude = rgi(loop_vertex[::-1])
+
                 if np.isnan(new_magnitude):
-                    print("nan")
+                    break
+
+                if np.sign(new_magnitude) != np.sign(original_magnitude):
+                    found_flip = True
                     break
 
             if found_flip:
-                new_vertices[i] = vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0]
-                print("yay")
-
-            # if no flip was found, go in -x direction until one of the two criteria are met
-            vertex_projected = vectors.project_points(np.array([vertex]), np.array([1, 0, 0]))[0]
-
-            while True:
-                vertex_projected[0] -= scale.xy
-                new_magnitude = rgi(vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0])
-
-                if np.sign(new_magnitude) != np.sign(original_magnitude):
-                    print("yay2")
-                    break
-
-                if np.isnan(new_magnitude):
-                    print("hello there")
-                    break
-
-            new_vertices[i] = vectors.project_points(np.array([vertex_projected]), np.array([1, 0, 0]))[0]
+                new_vertices[i] = loop_vertex
+                continue
 
     def area(self) -> float:
         """
