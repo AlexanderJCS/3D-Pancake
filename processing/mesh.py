@@ -267,29 +267,40 @@ class Mesh:
         scene = o3d.t.geometry.RaycastingScene()
         scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(self.bounding_box.get_mesh()))
 
-        for i, vertex in enumerate(new_vertices):
-            # cast rays in the direction of the gradient, and negative gradient
-            rays = o3d.core.Tensor([[*vertex, *gradient_dir], [*vertex, *(-gradient_dir)]], dtype=o3d.core.Dtype.Float32)
-            hit_distances = scene.cast_rays(rays)["t_hit"]
+        # Prepare ray origins and directions for all vertices in a vectorized form
+        ray_origins = np.repeat(new_vertices, 2,
+                                axis=0)  # Duplicate each vertex for two rays (positive and negative gradient)
+        ray_directions = np.tile([gradient_dir, -gradient_dir], (len(new_vertices), 1))
 
-            if np.inf in hit_distances:
-                print("uh oh")
-                continue  # uh oh, ray didn't hit anything which should be impossible
+        # Combine origins and directions to form rays
+        rays = np.hstack([ray_origins, ray_directions])
+        rays = o3d.core.Tensor(rays, dtype=o3d.core.Dtype.Float32)
 
-            hit_point_1 = vertex + gradient_dir * hit_distances[0].numpy()
-            hit_point_2 = vertex - gradient_dir * hit_distances[1].numpy()
+        # Perform batch raycasting
+        hit_results = scene.cast_rays(rays)
+        hit_distances = hit_results["t_hit"].numpy().reshape(-1, 2)
 
-            # conduct binary search on the gradient, searching for 0
-            while np.linalg.norm(hit_point_1 - hit_point_2) > 0.05:  # 0.05nm accuracy
-                mid = (hit_point_1 + hit_point_2) / 2
-                mid_val = rgi(mid[::-1])
+        # Filter out rays that didn't hit anything
+        valid_hits = np.all(hit_distances != np.inf, axis=1)
+        valid_vertices = new_vertices[valid_hits]
+        valid_hit_distances = hit_distances[valid_hits]
 
-                if mid_val < 0:
-                    hit_point_1 = mid
-                else:
-                    hit_point_2 = mid
+        # Compute hit points
+        hit_points_1 = valid_vertices + gradient_dir * valid_hit_distances[:, 0].reshape(-1, 1)
+        hit_points_2 = valid_vertices - gradient_dir * valid_hit_distances[:, 1].reshape(-1, 1)
 
-            new_vertices[i] = mid
+        # Binary search for zero gradient across all valid vertices
+        while np.linalg.norm(hit_points_1 - hit_points_2, axis=1).max() > 0.05:
+            midpoints = (hit_points_1 + hit_points_2) / 2
+            mid_values = rgi(midpoints[:, ::-1])  # Reverse the order for z, y, x indexing
+
+            # Vectorized update for binary search
+            mask = mid_values < 0
+            hit_points_1[mask] = midpoints[mask]
+            hit_points_2[~mask] = midpoints[~mask]
+
+        # Update only the valid vertices
+        new_vertices[valid_hits] = midpoints
 
     def area(self) -> float:
         """
