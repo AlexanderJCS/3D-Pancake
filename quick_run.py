@@ -10,14 +10,14 @@ from .processing import data
 
 
 def run():
-    with open("Pancake3D_eae430b521c411efa291f83441a96bd5/data/big_hole.npy", "rb") as f:
+    with open("Pancake3D_eae430b521c411efa291f83441a96bd5/data/bad_psd.npy", "rb") as f:
         roi = np.load(f)
 
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default
     output = processing.get_area(
         roi,
         data.Scale(5, 60),
-        c_s=0.2,
+        c_s=0.67,
         visualize=True,
         visualize_unclipped=True,
         visualize_end=True,
