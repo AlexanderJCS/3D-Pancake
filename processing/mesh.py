@@ -221,7 +221,7 @@ class Mesh:
         :return: None
         """
 
-        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
+        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz() - scale.xyz() / 2
         vertices = np.asarray(self.mesh.vertices)
 
         # Create a KDTree from points
