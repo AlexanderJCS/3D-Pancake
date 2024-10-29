@@ -268,17 +268,6 @@ class Mesh:
         scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(self.bounding_box.get_mesh()))
 
         for i, vertex in enumerate(new_vertices):
-            """
-            Below is a dumb approach but it works for the proof of concept
-            
-            1. Identify the point projected on the gradient direction vector, putting it in that coordinate system
-            2. Traverse all x values in the new coordinate system, until it flips direction or reaches the edge
-            3. Set the vertex to the x value where the gradient direction flips/whose absolute value is minimum
-            """
-
-            if i % 100 == 0:
-                print(f"{i}/{len(new_vertices)}")
-
             # cast rays in the direction of the gradient, and negative gradient
             rays = o3d.core.Tensor([[*vertex, *gradient_dir], [*vertex, *(-gradient_dir)]], dtype=o3d.core.Dtype.Float32)
             hit_distances = scene.cast_rays(rays)["t_hit"]
@@ -291,7 +280,7 @@ class Mesh:
             hit_point_2 = vertex - gradient_dir * hit_distances[1].numpy()
 
             # conduct binary search on the gradient, searching for 0
-            while np.linalg.norm(hit_point_1 - hit_point_2) > 0.05:
+            while np.linalg.norm(hit_point_1 - hit_point_2) > 0.05:  # 0.05nm accuracy
                 mid = (hit_point_1 + hit_point_2) / 2
                 mid_val = rgi(mid[::-1])
 
