@@ -1,3 +1,4 @@
+import itertools
 from typing import Optional
 
 from . import bounding_box
@@ -95,7 +96,7 @@ class Mesh:
         x, y, z = np.meshgrid(x_range, y_range, z_range, indexing="ij")
         vertices = np.stack((x, y, z), axis=-1).reshape(-1, 3)
 
-        # -- Create mesh vertices --
+        # -- Create mesh edges --
         # loop over the two axes that are variable
         loop_and_loop_next = [
             x_range.shape[0],
@@ -107,12 +108,20 @@ class Mesh:
         loop, loop_next = loop_and_loop_next
 
         indices = []
-        for i in range(loop - 1):
-            for j in range(loop_next - 1):
-                # make a quad
-                indices.append([i * loop_next + j, i * loop_next + j + 1, (i + 1) * loop_next + j])
-                indices.append([i * loop_next + j + 1, (i + 1) * loop_next + j + 1, (i + 1) * loop_next + j])
-
+        for i, j in itertools.product(range(loop - 1), range(loop_next - 1)):
+            indices.extend((
+                [
+                    i * loop_next + j,
+                    i * loop_next + j + 1,
+                    (i + 1) * loop_next + j,
+                ],
+                [
+                    i * loop_next + j + 1,
+                    (i + 1) * loop_next + j + 1,
+                    (i + 1) * loop_next + j,
+                ],
+            ))
+        
         # -- Create the mesh --
         mesh = o3d.geometry.TriangleMesh()
         mesh.vertices = o3d.utility.Vector3dVector(vertices)
@@ -162,6 +171,28 @@ class Mesh:
 
         self.mesh.remove_vertices_by_index(indices_to_remove)
 
+    @staticmethod
+    def _get_rgi(gradient: np.array, scale: data.Scale) -> interpolate.RegularGridInterpolator:
+        """
+        Gets the regular grid interpolator for the gradient. Helper function for bend.
+        
+        :param gradient: The gradient to interpolate.
+        :param scale: The voxel spacing.
+        :return: The regular grid interpolator.
+        """
+        
+        x = np.linspace(0, gradient.shape[2] * scale.xy, gradient.shape[2]) - scale.xy / 2
+        y = np.linspace(0, gradient.shape[1] * scale.xy, gradient.shape[1]) - scale.xy / 2
+        z = np.linspace(0, gradient.shape[0] * scale.z, gradient.shape[0]) - scale.z / 2
+
+        return interpolate.RegularGridInterpolator(
+            (z, y, x),
+            gradient,
+            bounds_error=False,
+            fill_value=np.nan,
+            method="linear"
+        )
+
     def bend(self, projected_gradient: np.array, scale: data.Scale) -> None:
         """
         Bends the mesh so the vertices are set where the gradient converges.
@@ -170,30 +201,18 @@ class Mesh:
         """
 
         gradient_dir = self.bounding_box.get_normal()
-        new_vertices = np.asarray(self.mesh.vertices)
+        new_vertices = np.asarray(self.mesh.vertices)  # the vertices to update
 
         # get the dot products of all vectors in projected gradient with the gradient direction vector, returning a 1D
         # value for each vertex determining the direction of the gradient
         magnitudes = np.dot(projected_gradient, gradient_dir)
-
-        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2]) - scale.xy / 2
-        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1]) - scale.xy / 2
-        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0]) - scale.z / 2
-
-        rgi = interpolate.RegularGridInterpolator(
-            (z, y, x),
-            magnitudes,
-            bounds_error=False,
-            fill_value=np.nan,
-            method="linear"
-        )
+        rgi = self._get_rgi(magnitudes, scale)
 
         scene = o3d.t.geometry.RaycastingScene()
-        scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(self.bounding_box.get_mesh()))
+        scene.add_triangles(o3d.t.geometry.TriangleMesh().from_legacy(mesh_legacy=self.bounding_box.get_mesh()))
 
-        # Prepare ray origins and directions for all vertices in a vectorized form
-        ray_origins = np.repeat(new_vertices, 2,
-                                axis=0)  # Duplicate each vertex for two rays (positive and negative gradient)
+        # Duplicate each vertex for two rays (positive and negative gradient)
+        ray_origins = np.repeat(new_vertices, 2, axis=0)
         ray_directions = np.tile([gradient_dir, -gradient_dir], (len(new_vertices), 1))
 
         # Combine origins and directions to form rays
@@ -210,18 +229,22 @@ class Mesh:
         valid_hit_distances = hit_distances[valid_hits]
 
         # Compute hit points
-        hit_points_1 = valid_vertices + gradient_dir * valid_hit_distances[:, 0].reshape(-1, 1)
-        hit_points_2 = valid_vertices - gradient_dir * valid_hit_distances[:, 1].reshape(-1, 1)
+        hit_points_neg = valid_vertices - gradient_dir * valid_hit_distances[:, 1].reshape(-1, 1)
+        hit_points_pos = valid_vertices + gradient_dir * valid_hit_distances[:, 0].reshape(-1, 1)
 
         # Binary search for zero gradient across all valid vertices
-        while np.linalg.norm(hit_points_1 - hit_points_2, axis=1).max() > 0.05:
-            midpoints = (hit_points_1 + hit_points_2) / 2
+        # Initialize midpoints to hit_points_pos. Avoids the very unlikely case that the loop will not run, and an
+        #  error will be thrown due to the uninitialized variable "midpoints"
+        midpoints = hit_points_pos
+        
+        while np.linalg.norm(hit_points_neg - hit_points_pos, axis=1).max() > 0.05:  # 0.05 nm threshold
+            midpoints = (hit_points_neg + hit_points_pos) / 2
             mid_values = rgi(midpoints[:, ::-1])  # Reverse the order for z, y, x indexing
 
             # Vectorized update for binary search
             mask = mid_values < 0
-            hit_points_1[mask] = midpoints[mask]
-            hit_points_2[~mask] = midpoints[~mask]
+            hit_points_pos[mask] = midpoints[mask]
+            hit_points_neg[~mask] = midpoints[~mask]
 
         # Update only the valid vertices
         new_vertices[valid_hits] = midpoints
