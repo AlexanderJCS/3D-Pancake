@@ -291,9 +291,9 @@ class Mesh:
             hit_point_2 = vertex - gradient_dir * hit_distances[1].numpy()
 
             # conduct binary search on the gradient, searching for 0
-            while np.linalg.norm(hit_point_1 - hit_point_2) > 1:
+            while np.linalg.norm(hit_point_1 - hit_point_2) > 0.05:
                 mid = (hit_point_1 + hit_point_2) / 2
-                mid_val = rgi(mid)
+                mid_val = rgi(mid[::-1])
 
                 if mid_val < 0:
                     hit_point_1 = mid
