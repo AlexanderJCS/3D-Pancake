@@ -30,6 +30,24 @@ class Obb:
         pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(points))
         return pcd.get_oriented_bounding_box()
 
+    def get_mesh(self) -> o3d.geometry.TriangleMesh:
+        """
+        :return: The mesh of the OBB
+        """
+
+        mesh_box = o3d.geometry.TriangleMesh.create_box(width=1.0, height=1.0, depth=1.0)
+        mesh_box.translate([-0.5, -0.5, -0.5])  # Center the box at the origin
+
+        # Create a scaling transformation matrix to scale the box to the size of the OBB
+        scaling_matrix = np.diag([*self.o3d_obb.extent, 1])
+        mesh_box.transform(scaling_matrix)
+
+        # Rotate and translate the box to match the OBB
+        mesh_box.rotate(self.o3d_obb.R, center=(0, 0, 0))
+        mesh_box.translate(self.o3d_obb.center)
+
+        return mesh_box
+
     def get_rotation_vec(self) -> np.ndarray:
         """
         :return: A normalized 3D vector representing the rotation of the OBB in 3D space

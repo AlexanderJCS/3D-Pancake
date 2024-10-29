@@ -2,7 +2,6 @@ from typing import Optional
 
 from . import bounding_box
 from . import data
-from . import vectors
 
 import open3d as o3d
 import numpy as np
@@ -265,6 +264,9 @@ class Mesh:
             method="linear"
         )
 
+        scene = o3d.t.geometry.RaycastingScene()
+        scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(self.bounding_box.get_mesh()))
+
         for i, vertex in enumerate(new_vertices):
             """
             Below is a dumb approach but it works for the proof of concept
@@ -277,43 +279,28 @@ class Mesh:
             if i % 100 == 0:
                 print(f"{i}/{len(new_vertices)}")
 
-            original_magnitude = rgi(vertex[::-1])
-            found_flip = False
+            # cast rays in the direction of the gradient, and negative gradient
+            rays = o3d.core.Tensor([[*vertex, *gradient_dir], [*vertex, *(-gradient_dir)]], dtype=o3d.core.Dtype.Float32)
+            hit_distances = scene.cast_rays(rays)["t_hit"]
 
-            # first go in +x direction until one of the two criteria are met
-            loop_vertex = vertex
-            while True:
-                loop_vertex += gradient_dir * 4
-                new_magnitude = rgi(loop_vertex[::-1])
+            if np.inf in hit_distances:
+                print("uh oh")
+                continue  # uh oh, ray didn't hit anything which should be impossible
 
-                if np.isnan(new_magnitude):
-                    break
+            hit_point_1 = vertex + gradient_dir * hit_distances[0].numpy()
+            hit_point_2 = vertex - gradient_dir * hit_distances[1].numpy()
 
-                if np.sign(new_magnitude) != np.sign(original_magnitude):
-                    found_flip = True
-                    break
+            # conduct binary search on the gradient, searching for 0
+            while np.linalg.norm(hit_point_1 - hit_point_2) > 1:
+                mid = (hit_point_1 + hit_point_2) / 2
+                mid_val = rgi(mid)
 
-            if found_flip:
-                new_vertices[i] = loop_vertex
-                continue
+                if mid_val < 0:
+                    hit_point_1 = mid
+                else:
+                    hit_point_2 = mid
 
-            # if no flip was found, go in -x direction until one of the two criteria are met
-            loop_vertex = vertex
-            while True:
-                loop_vertex -= gradient_dir * 4
-
-                new_magnitude = rgi(loop_vertex[::-1])
-
-                if np.isnan(new_magnitude):
-                    break
-
-                if np.sign(new_magnitude) != np.sign(original_magnitude):
-                    found_flip = True
-                    break
-
-            if found_flip:
-                new_vertices[i] = loop_vertex
-                continue
+            new_vertices[i] = mid
 
     def area(self) -> float:
         """
