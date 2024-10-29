@@ -17,7 +17,6 @@ class Mesh:
         self.bounding_box = obb
         self.mesh, self.min_extent_idx_rotated = self._gen(obb, geom_center, scale)
         self.prev_vertices = []
-        self.rgi: Optional[interpolate.RegularGridInterpolator] = None
 
     @staticmethod
     def _gen(obb: bounding_box.Obb, geom_center: np.ndarray, scale: data.Scale):
@@ -135,81 +134,6 @@ class Mesh:
 
         return mesh, min_extent_index_rotated
 
-    def _append_prev_vertices(self, vertices: np.ndarray):
-        self.prev_vertices.append(vertices.copy())
-
-        # Remove elements of prev_vertices if it exceeds the maximum length
-        while len(self.prev_vertices) > self.MAX_PREV_VERTICES:
-            self.prev_vertices.pop(0)
-
-    def gen_rgi(self, scale: data.Scale, projected_gradient: np.ndarray) -> None:
-        """
-        Generates a regular grid interpolator and saves it as a class variable. Instead of just generating it each
-        iteration, this function is used to generate it once and save it for later use. This results in a 1% performance
-        increase on average for the entire runtime of the program.
-
-        :param scale: The scale of the data
-        :param projected_gradient: The gradient data
-        """
-
-        # Create x y z points for the regular grid interpolator
-        x = np.linspace(0, projected_gradient.shape[2] * scale.xy, projected_gradient.shape[2]) - scale.xy / 2
-        y = np.linspace(0, projected_gradient.shape[1] * scale.xy, projected_gradient.shape[1]) - scale.xy / 2
-        z = np.linspace(0, projected_gradient.shape[0] * scale.z, projected_gradient.shape[0]) - scale.z / 2
-
-        # Interpolate the gradient values
-        self.rgi = interpolate.RegularGridInterpolator(
-            (z, y, x),
-            projected_gradient,
-            bounds_error=False,
-            fill_value=np.nan,
-            method="linear"
-        )
-
-    def deform(self, projected_gradient: np.ndarray, scale: data.Scale):
-        if self.min_extent_idx_rotated in (0, 2):
-            # no idea why I need to do this, but it works
-            projected_gradient = projected_gradient[:, :, :, ::-1]  # flip the gradient vector
-
-        vertices = np.asarray(self.mesh.vertices)
-
-        self._append_prev_vertices(vertices)
-
-        if self.rgi is None:
-            self.gen_rgi(scale, projected_gradient)
-
-        vertices = vertices[:, ::-1]  # rearrange vertices to zyx format since that's what the interpolator wants
-        gradients = self.rgi(vertices)
-
-        # Create a mask to not do math on NaN values to avoid errors
-        # Ideally there should be no NaN values but just in case
-        nan_mask = np.isnan(gradients).any(axis=1)
-        vertices[~nan_mask] += gradients[~nan_mask] * 5
-        self.mesh.vertices = o3d.utility.Vector3dVector(vertices[:, ::-1])
-
-    def error(self) -> float:
-        """
-        Returns the euclidian error based off of the mesh's position and the previous positions. Lower means the mesh is
-        closer to its final form. Used when deforming the mesh.
-
-        :return: The euclidian error
-        """
-
-        if len(self.prev_vertices) < self.MAX_PREV_VERTICES:
-            return np.inf
-
-        # e = sigma(i = 1, k) ((p_i a - p_i b)) / k
-        # aka, mean euclidian distance shifted per vertex
-        sum_error = 0
-
-        vertices = np.asarray(self.mesh.vertices)
-        for prev_vertices_item in self.prev_vertices:
-            sum_error += np.mean(np.linalg.norm(vertices - prev_vertices_item, axis=1))
-
-        mean_error = sum_error / self.MAX_PREV_VERTICES
-
-        return mean_error
-
     def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
         """
         Clips all vertices that are outside the boolean data by a certain distance threshold.
@@ -221,7 +145,7 @@ class Mesh:
         :return: None
         """
 
-        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz() - scale.xyz() / 2
+        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
         vertices = np.asarray(self.mesh.vertices)
 
         # Create a KDTree from points

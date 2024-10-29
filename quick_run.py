@@ -18,7 +18,7 @@ def run():
         roi,
         data.Scale(5, 60),
         c_s=0.67,
-        visualize=False,
+        visualize=True,
         visualize_unclipped=True,
         visualize_end=True,
     )
