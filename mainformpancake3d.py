@@ -17,6 +17,8 @@ import os
 
 from . import pancake_worker
 
+from log import logger
+
 
 class MainFormPancake3D(OrsAbstractWindow):
 
@@ -122,25 +124,29 @@ class MainFormPancake3D(OrsAbstractWindow):
         Processes the selected ROI when pressed
         """
 
-        c_s = float(self.ui.line_edit_c_s.text())
-
-        vertex_threshold_text = self.ui.line_edit_vertex_deletion_threshold.text()
-        vertex_threshold = float(vertex_threshold_text) if vertex_threshold_text else None
-
-        visualize_steps = self.ui.chk_visualize_steps.isChecked()
-        visualize_results = self.ui.chk_visualize_results.isChecked()
-
-        output_filepath = self.ui.line_edit_filepath.text()
-
-        self.worker_thread = pancake_worker.PancakeWorker(
-            self.selected_roi, visualize_steps, visualize_results, c_s, output_filepath,
-            self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked(),
-            self.ui.chk_gen_dragonfly_mesh.isChecked(), vertex_threshold
-        )
-
-        self.worker_thread.update_output_label.connect(self.update_output_label)
-        self.worker_thread.show_visualization.connect(self.visualize_signal)
-        self.worker_thread.start()
+        try:
+            c_s = float(self.ui.line_edit_c_s.text())
+    
+            vertex_threshold_text = self.ui.line_edit_vertex_deletion_threshold.text()
+            vertex_threshold = float(vertex_threshold_text) if vertex_threshold_text else None
+    
+            visualize_steps = self.ui.chk_visualize_steps.isChecked()
+            visualize_results = self.ui.chk_visualize_results.isChecked()
+    
+            output_filepath = self.ui.line_edit_filepath.text()
+    
+            self.worker_thread = pancake_worker.PancakeWorker(
+                self.selected_roi, visualize_steps, visualize_results, c_s, output_filepath,
+                self.ui.chk_compare_lindblad.isChecked(), self.ui.chk_compare_lewiner.isChecked(),
+                self.ui.chk_gen_dragonfly_mesh.isChecked(), vertex_threshold
+            )
+    
+            self.worker_thread.update_output_label.connect(self.update_output_label)
+            self.worker_thread.show_visualization.connect(self.visualize_signal)
+            self.worker_thread.start()
+        except Exception:
+            logger.exception("Error occured when processing")
+            raise
 
     def refresh_file_path(self) -> None:
         """

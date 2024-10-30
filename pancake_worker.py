@@ -13,6 +13,8 @@ import numpy as np
 from .processing import processing
 from . import other_algorithms
 
+from log import logger
+
 
 def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -23,6 +25,8 @@ def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np
     :return: tuple(The cropped ROI array, the transformations required to translate the vertices back to the original
               in world space)
     """
+    
+    logger.info("Getting cropped ROI array")
 
     roi_arr = roi.getAsNDArray()
 
@@ -34,11 +38,17 @@ def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np
     max_indices = roi.getLocalBoundingBoxMax(0)
     max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
 
-    return roi_arr[
+    cropped = roi_arr[
         min_indices[0]:max_indices[0] + 1,
         min_indices[1]:max_indices[1] + 1,
         min_indices[2]:max_indices[2] + 1
-    ], (-1 * min_indices[::-1] * scale.xyz())
+    ]
+    
+    reverse_transformation = (-1 * min_indices[::-1] * scale.xyz())
+    
+    logger.debug(f"Cropped to shape {cropped[0].shape} with reverse transformation {reverse_transformation}")
+    
+    return cropped, reverse_transformation
 
 
 def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scale: data.Scale) -> ors.Mesh:
@@ -51,6 +61,8 @@ def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scal
         back to the original when creating the output mesh to visualize in Dragonfly.
     :return: The Dragonfly ORS mesh
     """
+
+    logger.info("Converting mesh to ORS mesh")
 
     o3d_mesh = mesh.mesh
 
@@ -162,6 +174,8 @@ class PancakeWorker(QThread):
             self.update_output_label.emit("Permission error writing to CSV. Is it open by another program?")
 
     def process_single_roi(self):
+        logger.info("Processing single ROI...")
+        
         scale = scale_from_roi(self._selected_roi)
         cropped_roi_arr, original_translations = get_cropped_roi_arr(self._selected_roi, scale)
 
@@ -180,11 +194,11 @@ class PancakeWorker(QThread):
         area_output = output.area_microns()
 
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about lindblad and lewiner areas
-        self.update_output_label.emit(f"Calculating Lindblad 2005 area...")
+        self.update_output_label.emit("Calculating Lindblad 2005 area...")
         lindblad_2005 = [other_algorithms.surface_area_lindblad_2005(self._selected_roi)] \
             if self._compare_lindblad else None
 
-        self.update_output_label.emit(f"Calculating Lewiner 2012 area...")
+        self.update_output_label.emit("Calculating Lewiner 2012 area...")
         lewiner_2012 = [other_algorithms.surface_area_lewiner_2012(cropped_roi_arr, scale)] \
             if self._compare_lewiner else None
 
@@ -196,12 +210,16 @@ class PancakeWorker(QThread):
         self._write_to_csv([self._selected_roi.getTitle()], [area_output], lindblad_2005, lewiner_2012)
 
     def process_multi_roi(self):
+        logger.info("Running pancake worker multiroi")
+        
         labels = []
         outputs = []
         lindblad_2005 = [] if self._compare_lindblad else None
         lewiner_2012 = [] if self._compare_lewiner else None
 
         for label in range(1, self._selected_roi.getLabelCount() + 1):
+            logger.info(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}...")
+            
             self.update_output_label.emit(f"Loading PSD {label}/{self._selected_roi.getLabelCount()}")
 
             copy_roi: ors.ROI = ors.ROI()

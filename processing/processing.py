@@ -14,8 +14,10 @@ from . import vectors
 # Workaround since running Dragonfly with OrsMinimalStartupScript.py causes the package path to be different
 if __package__.count(".") == 0:
     import visual
+    from log import logger
 else:
     from .. import visual
+    from ..log import logger
 
 
 @dataclass(frozen=True)
@@ -66,9 +68,11 @@ def visualize_step(
     
     """
     if not visualize:
+        logger.debug("Skipping visualization")
         return
         
     if visualize_signal:
+        logger.info(f"Visualizing {step_name} via signal")
         visualize_signal.emit(functools.partial(
             visual.vis_3d,
             psd_data, scale, step_name,
@@ -79,6 +83,7 @@ def visualize_step(
             vector=vector
         ))
     else:
+        logger.info(f"Visualizing {step_name} directly")
         visual.vis_3d(
             psd_data, scale, step_name,
             obb=obb,
@@ -109,42 +114,53 @@ def get_area(
     :return: A PancakeOutput class, containing surface area and a bunch of other data
     """
     
+    logger.info(f"Starting processing pipeline. Scale: {scale}, c_s: {c_s}, dist_threshold: {dist_threshold}")
+    
     # Step A: load and format data
+    logger.info("Formatting data")
     formatted = data.format_data(raw_data)
 
     # Step B: oriented bounding boxes
+    logger.info("Creating OBB")
     obb = bounding_box.Obb(formatted, scale)
 
     # Step Ba: Expand the dataset so the OBB does not have values outside the dataset
+    logger.info("Padding data")
     formatted, translations = obb.expand_data(scale, formatted)
 
     visualize_step(visualize, visualize_signal, "Step A: Formatted Data", formatted, scale, obb=obb)
 
     # Step C: distance map
+    logger.info("Creating distance map")
     distance_map = dist.gen_dist_map(formatted, scale)
     blurred = dist.blur(distance_map, c_s, scale)
     
     # don't show if it needs to be emitted to a signal since matplotlib doesn't play well with PyQt
     if visualize and not visualize_signal:
+        logger.info("Visualizing distance map")
         visualizer = visual.SliceViewer(distance_map)
         visualizer.visualize()
 
     # Step D: find the center
+    logger.info("Finding center")
     center_point = center.geom_center(distance_map, scale)
 
     # Step E: create the mesh
+    logger.info("Creating mesh")
     psd_mesh = mesh.Mesh(obb, center_point, scale)
 
     visualize_step(visualize, visualize_signal, "Step E: Mesh", distance_map, scale, obb=obb,
                    center_point=center_point, psd_mesh=psd_mesh)
 
     # Step F: calculate gradient
+    logger.info("Calculating gradient")
     gradient = vectors.gen_gradient(blurred, scale)
 
     visualize_step(visualize, visualize_signal, "Step F: Gradient", distance_map, scale, obb=obb,
                    center_point=center_point, psd_mesh=psd_mesh, vectors_arr=gradient)
 
     # Step G: project gradient onto normal
+    logger.info("Projecting gradient onto normal")
     normal = obb.get_normal()
     projected_gradient = vectors.project_on_normal(gradient, normal)
 
@@ -152,16 +168,20 @@ def get_area(
                    center_point=center_point, psd_mesh=psd_mesh, vectors_arr=projected_gradient)
 
     # Step H: deform the mesh
+    logger.info("Deforming mesh")
     psd_mesh.bend(projected_gradient, scale)
 
     visualize_step(visualize or visualize_unclipped, visualize_signal, "Step H: Deformed Mesh", distance_map,
                    scale, obb=obb, center_point=center_point, psd_mesh=psd_mesh, vectors_arr=projected_gradient)
 
     # Step I: move the vertices into the nearest OBB
+    logger.info("Clipping vertices")
     psd_mesh.clip_vertices(formatted, scale, dist_threshold)
 
     visualize_step(visualize or visualize_end, visualize_signal, "Step I: Clipped Vertices", distance_map,
                    scale, obb=obb, center_point=center_point, psd_mesh=psd_mesh)
+
+    logger.info("Finished processing pipeline.")
 
     return PancakeOutput(
         psd_mesh.area(),
