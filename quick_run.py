@@ -13,7 +13,7 @@ import os
 
 def run():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(current_dir, "data/roi.npy"), "rb") as f:
+    with open(os.path.join(current_dir, "data/test/10as065n5.npy"), "rb") as f:
         roi = np.load(f)
 
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default

@@ -13,7 +13,7 @@ import numpy as np
 from .processing import processing
 from . import other_algorithms
 
-from log import logger
+from .log import logger
 
 
 def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np.ndarray]:

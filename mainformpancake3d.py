@@ -16,8 +16,7 @@ import threading
 import os
 
 from . import pancake_worker
-
-from log import logger
+from .log import logger
 
 
 class MainFormPancake3D(OrsAbstractWindow):
