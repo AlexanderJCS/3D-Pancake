@@ -5,7 +5,7 @@ import logging
 import os
 
 # Configure the logger
-logger = logging.getLogger("my_app")
+logger = logging.getLogger("3d_pancake")
 logger.setLevel(logging.DEBUG)
 
 # Create handlers
@@ -15,7 +15,7 @@ file_handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(
 console_handler.setLevel(logging.INFO)
 file_handler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(funcName)s - %(message)s - %(levelname)s")
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s")
 console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
 
