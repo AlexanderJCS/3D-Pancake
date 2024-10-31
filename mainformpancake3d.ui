@@ -69,7 +69,7 @@
      <item>
       <widget class="QLineEdit" name="line_edit_vertex_deletion_threshold">
        <property name="placeholderText">
-        <string>Optional: Default Value = Z Spacing / 1.5</string>
+        <string>Optional: Default Value = Z Spacing / 2</string>
        </property>
       </widget>
      </item>
