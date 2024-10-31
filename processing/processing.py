@@ -176,7 +176,7 @@ def get_area(
 
     # Step I: move the vertices into the nearest OBB
     logger.info("Clipping vertices")
-    psd_mesh.clip_vertices(formatted, scale, dist_threshold)
+    psd_mesh.clip_vertices(distance_map, scale, dist_threshold)
 
     visualize_step(visualize or visualize_end, visualize_signal, "Step I: Clipped Vertices", distance_map,
                    scale, obb=obb, center_point=center_point, psd_mesh=psd_mesh)

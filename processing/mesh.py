@@ -143,31 +143,28 @@ class Mesh:
 
         return mesh, min_extent_index_rotated
 
-    def clip_vertices(self, bool_data: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
+    def clip_vertices(self, dist_map: np.ndarray, scale: data.Scale, dist_threshold: Optional[float] = None) -> None:
         """
         Clips all vertices that are outside the boolean data by a certain distance threshold.
 
-        :param bool_data: The boolean data to clip the vertices to
+        :param dist_map: The distance map to clip the vertices by. Note that this should be the not-projected dist map.
         :param scale: The voxel spacing
         :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
-                                 equal to max(scale.xy, scale.z) / 1.5
+                                 equal to max(scale.xy, scale.z) / 2
         :return: None
         """
 
-        points = np.argwhere(bool_data)[:, ::-1] * scale.xyz()
+        dist_map_rgi = self._get_rgi(dist_map, scale)
         vertices = np.asarray(self.mesh.vertices)
 
-        # Create a KDTree from points
-        tree = spatial.cKDTree(points)
+        # Find the distances of each vertex
+        distances = dist_map_rgi(vertices[:, ::-1])  # Reverse the order for z, y, x indexing
 
-        # Query the KDTree to find the distance to the nearest point in points for each vertex
-        distances, _ = tree.query(vertices, k=1)
-
-        # Find vertices that need to be removed
         if dist_threshold is None:
-            dist_threshold = max(scale.xy, scale.z) / 1.5
+            dist_threshold = max(scale.xy, scale.z) / 2
 
-        indices_to_remove = np.where(distances > dist_threshold)[0]
+        # less than negative distance threshold since outside values are negative in the dist map
+        indices_to_remove = np.where(distances < -dist_threshold)[0]
 
         self.mesh.remove_vertices_by_index(indices_to_remove)
 
