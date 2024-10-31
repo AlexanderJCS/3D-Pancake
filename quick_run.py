@@ -8,17 +8,20 @@ import numpy as np
 from .processing import processing
 from .processing import data
 
+import os
+
 
 def run():
-    with open("3D-Pancake/data/roi.npy", "rb") as f:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(current_dir, "data/roi.npy"), "rb") as f:
         roi = np.load(f)
 
     # note: c_s = 0.2 provides good results in my experience, but c_s = 0.67 is default
     output = processing.get_area(
         roi,
         data.Scale(5, 60),
-        c_s=0.67,
-        visualize=True,
+        c_s=0.2,
+        visualize=False,
         visualize_unclipped=True,
         visualize_end=True,
     )
