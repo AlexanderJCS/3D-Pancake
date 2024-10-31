@@ -38,4 +38,4 @@ def blur(dist_map: np.ndarray, c_s: float, scale: meta.Scale) -> np.ndarray:
     sigma_z = sigma * (scale.xy / scale.z)
 
     # Apply anisotropic Gaussian blur
-    return ndimage.gaussian_filter(dist_map, sigma=(sigma_z, sigma_xy, sigma_xy))
+    return ndimage.gaussian_filter(dist_map, sigma=(sigma_z, sigma_xy, sigma_xy), mode="nearest")
