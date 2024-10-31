@@ -2,6 +2,7 @@
 #  should import the logger from this file.
 
 import logging
+import sys
 import os
 
 # Configure the logger
@@ -9,7 +10,7 @@ logger = logging.getLogger("3d_pancake")
 logger.setLevel(logging.DEBUG)
 
 # Create handlers
-console_handler = logging.StreamHandler()
+console_handler = logging.StreamHandler(sys.stdout)  # if we use stderr dragonfly thinks it's an error
 file_handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../3d_pancake.log"))
 
 console_handler.setLevel(logging.INFO)
