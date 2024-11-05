@@ -107,12 +107,11 @@ class Obb:
         min_data_xyz = (0, 0, 0)
         max_data_xyz = data.shape[::-1] * scale.xyz()
 
-        # Find the amount of padding needed on each axis direction in the format [(-x, +x), (-y, +y), (-z, +z)]
-        padding_world_coords = np.abs(np.array([
-            (min_obb_xyz[0] - min_data_xyz[0], max_data_xyz[0] - max_obb_xyz[0]),
-            (min_obb_xyz[1] - min_data_xyz[1], max_data_xyz[1] - max_obb_xyz[1]),
-            (min_obb_xyz[2] - min_data_xyz[2], max_data_xyz[2] - max_obb_xyz[2])
-        ], dtype=np.float64))
+        padding_world_coords = np.array([
+            [max(-(min_obb_xyz[0] - min_data_xyz[0]), 0), max(max_obb_xyz[0] - max_data_xyz[0], 0)],
+            [max(-(min_obb_xyz[1] - min_data_xyz[1]), 0), max(max_obb_xyz[1] - max_data_xyz[1], 0)],
+            [max(-(min_obb_xyz[2] - min_data_xyz[2]), 0), max(max_obb_xyz[2] - max_data_xyz[2], 0)]
+        ])
 
         # Convert to voxel coords
         padding_voxels = (padding_world_coords / scale.xyz().reshape(-1, 1)).astype(int)
