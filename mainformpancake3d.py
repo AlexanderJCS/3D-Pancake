@@ -144,7 +144,7 @@ class MainFormPancake3D(OrsAbstractWindow):
             self.worker_thread.show_visualization.connect(self.visualize_signal)
             self.worker_thread.start()
         except Exception:
-            logger.exception("Error occured when processing")
+            logger.exception("Error occurred when processing")
             raise
 
     def refresh_file_path(self) -> None:
