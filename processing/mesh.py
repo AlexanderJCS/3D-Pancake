@@ -8,7 +8,6 @@ import open3d as o3d
 import numpy as np
 
 from scipy import interpolate
-from scipy import spatial
 
 
 class Mesh:
