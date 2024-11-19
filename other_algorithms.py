@@ -19,16 +19,18 @@ def surface_area_lewiner_2012(roi_data: np.ndarray, scale: data.Scale):
     """
 
     # pad the ROI data to avoid topological inconsistencies near the edge
-    roi_data = np.pad(roi_data, 1)
+    try:
+        roi_data = np.pad(roi_data, 1)
 
-    vertices, faces, normals, values = measure.marching_cubes(roi_data, spacing=scale.zyx())
+        vertices, faces, normals, values = measure.marching_cubes(roi_data, spacing=scale.zyx())
 
-    mesh = o3d.geometry.TriangleMesh()
-    mesh.vertices = o3d.utility.Vector3dVector(vertices)
-    mesh.triangles = o3d.utility.Vector3iVector(faces)
+        mesh = o3d.geometry.TriangleMesh()
+        mesh.vertices = o3d.utility.Vector3dVector(vertices)
+        mesh.triangles = o3d.utility.Vector3iVector(faces)
 
-    return mesh.get_surface_area() / 1e6 / 2
-
+        return mesh.get_surface_area() / 1e6 / 2
+    except RuntimeError:  # if the mesh is empty
+        return 0
 
 def surface_area_lindblad_2005(roi: ors.ROI):
     """

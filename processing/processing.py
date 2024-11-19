@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
+import open3d as o3d
 
 from . import data
 from . import bounding_box
@@ -29,7 +30,7 @@ class PancakeOutput:
     center: np.ndarray
     obb: bounding_box.Obb
     points: np.ndarray
-    psd_mesh: mesh.Mesh
+    psd_mesh: Optional[mesh.Mesh]
     gradient: np.ndarray
     projected_gradient: np.ndarray
 
@@ -111,9 +112,13 @@ def get_area(
     :param dist_threshold: The distance threshold to clip each vertex in the final step. If None, the threshold is
                            equal to max(scale.xy, scale.z)
     :param visualize_signal: The signal to emit the visualization to. Used for PyQt
-    :return: A PancakeOutput class, containing surface area and a bunch of other data
+    :return: A PancakeOutput class, containing surface area and a bunch of other data. Returns with zeros/filler data if the input data is empty
     """
-    
+
+    if len(np.argwhere(raw_data)) == 0:
+        logger.warning("Data is empty")
+        return PancakeOutput(0, np.array([0, 0, 0]), o3d.geometry.OrientedBoundingBox(), np.array([0, 0, 0]), None, np.array([0, 0, 0]), np.array([0, 0, 0]), np.array([0, 0, 0]))
+
     logger.info(f"Starting processing pipeline. Scale: {scale}, c_s: {c_s}, dist_threshold: {dist_threshold}")
     
     # Step A: load and format data

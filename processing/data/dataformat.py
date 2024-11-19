@@ -11,6 +11,7 @@ else:
 def format_data(data: np.ndarray, scale: meta.Scale) -> tuple[np.ndarray, np.ndarray]:
     """
     :param data: A 3D numpy array where each element is an uint8
+    :param scale: The voxel scale
     :return: The 3D boolean array, translations applied when cropping
     """
 
@@ -18,6 +19,10 @@ def format_data(data: np.ndarray, scale: meta.Scale) -> tuple[np.ndarray, np.nda
 
     # crop the data to remove any empty space
     data_coords = np.argwhere(data)
+
+    if data_coords.size == 0:
+        logger.warning("Data is empty")
+        return data, np.array([0, 0, 0])
 
     min_xyz = np.min(data_coords, axis=0)
     max_xyz = np.max(data_coords, axis=0)

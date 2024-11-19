@@ -54,6 +54,7 @@ def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np
 def mesh_to_ors(mesh: processing.mesh.Mesh, translations: list[np.ndarray], scale: data.Scale) -> ors.Mesh:
     """
     Converts a processing.mesh.Mesh object to a Dragonfly ORS mesh. Used for displaying the final mesh to the user.
+    Precondition: The mesh is not none
 
     :param scale: The voxel spacing
     :param mesh: The mesh to convert
@@ -186,7 +187,7 @@ class PancakeWorker(QThread):
         )
 
         # todo: code cleanup: remove duplicate code between single ROI and multi ROI about generating dragonfly mesh
-        if self._gen_dragonfly_mesh:
+        if self._gen_dragonfly_mesh and output.psd_mesh is not None:
             ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
             ors_mesh.setTitle(f"3D Pancake Output Mesh: {self._selected_roi.getTitle()}")
             ors_mesh.publish()
@@ -239,7 +240,7 @@ class PancakeWorker(QThread):
                 dist_threshold=self._dist_threshold
             )
 
-            if self._gen_dragonfly_mesh:
+            if self._gen_dragonfly_mesh and output.psd_mesh is not None:
                 ors_mesh = mesh_to_ors(output.psd_mesh, [original_translations, output.translations], scale)
                 ors_mesh.setTitle(f"3D Pancake Output Mesh: {label}")
                 ors_mesh.publish()
