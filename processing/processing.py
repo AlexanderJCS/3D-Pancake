@@ -118,7 +118,7 @@ def get_area(
     
     # Step A: load and format data
     logger.info("Formatting data")
-    formatted = data.format_data(raw_data)
+    formatted, cropping_translations = data.format_data(raw_data, scale)
 
     # Step B: oriented bounding boxes
     logger.info("Creating OBB")
@@ -126,7 +126,7 @@ def get_area(
 
     # Step Ba: Expand the dataset so the OBB does not have values outside the dataset
     logger.info("Padding data")
-    formatted, translations = obb.expand_data(scale, formatted)
+    formatted, padding_translations = obb.expand_data(scale, formatted)
 
     visualize_step(visualize, visualize_signal, "Step A: Formatted Data", formatted, scale, obb=obb)
 
@@ -191,6 +191,6 @@ def get_area(
         psd_mesh,
         gradient,
         projected_gradient,
-        translations
+        cropping_translations + padding_translations
     )
     
