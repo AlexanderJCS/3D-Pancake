@@ -163,9 +163,9 @@ class PancakeWorker(QThread):
         }
 
         if lindblad_2005 is not None:
-            columns["Lindblad 2005 Area (um²)"] = [str(output) for output in lindblad_2005]
+            columns["Lindblad 2005 Area / 2 (um²)"] = [str(output) for output in lindblad_2005]
         if lewiner_2012 is not None:
-            columns["Lewiner 2012 Area (um²)"] = [str(output) for output in lewiner_2012]
+            columns["Lewiner 2012 Area / 2 (um²)"] = [str(output) for output in lewiner_2012]
 
         try:
             csv_output.write_csv(self._output_filepath, columns)
