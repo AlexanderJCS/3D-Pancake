@@ -126,7 +126,7 @@ class Ui_MainFormPancake3D(object):
         MainFormPancake3D.setWindowTitle(_translate("MainFormPancake3D", "3D Pancake"))
         self.label_2.setText(_translate("MainFormPancake3D", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:700;\">Parameters</span></p></body></html>"))
         self.label_cs.setText(_translate("MainFormPancake3D", "<html><head/><body><p>cs (lower = tighter fit)</p></body></html>"))
-        self.line_edit_c_s.setText(_translate("MainFormPancake3D", "0.67"))
+        self.line_edit_c_s.setText(_translate("MainFormPancake3D", "0.3"))
         self.label_vertex_deletion_threshold.setText(_translate("MainFormPancake3D", "Vertex deletion threshold (nm)"))
         self.line_edit_vertex_deletion_threshold.setPlaceholderText(_translate("MainFormPancake3D", "Optional: Default Value = Z Spacing / 2"))
         self.label.setText(_translate("MainFormPancake3D", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:700;\">Output</span></p></body></html>"))
