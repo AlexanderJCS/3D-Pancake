@@ -153,14 +153,18 @@ class PancakeWorker(QThread):
         self._dist_threshold = dist_threshold
 
     def _write_to_csv(
-            self, labels: list[str], outputs: list[float],
+            self, names: list[str], outputs: list[float],
+            labels: typing.Optional[list[str]] = None,
             lindblad_2005: typing.Optional[list[float]] = None,
             lewiner_2012: typing.Optional[list[float]] = None
     ):
-        columns = {
-            "Name (object title or label number)": labels,
-            "3D Pancake Area (um²)": [str(output) for output in outputs]
-        }
+        columns = {}
+
+        if labels is not None:
+            columns["Label"] = labels
+
+        columns["Name"] = names
+        columns["3D Pancake Area (um²)"] = [str(output) for output in outputs]
 
         if lindblad_2005 is not None:
             columns["Lindblad 2005 Area / 2 (um²)"] = [str(output) for output in lindblad_2005]
@@ -214,6 +218,7 @@ class PancakeWorker(QThread):
         logger.info("Running pancake worker multiroi")
         
         labels = []
+        names = []
         outputs = []
         lindblad_2005 = [] if self._compare_lindblad else None
         lewiner_2012 = [] if self._compare_lewiner else None
@@ -227,6 +232,7 @@ class PancakeWorker(QThread):
             copy_roi.copyShapeFromStructuredGrid(self._selected_roi)
             self._selected_roi.addToVolumeROI(copy_roi, label)
             labels.append(label)
+            names.append(self._selected_roi.getLabelName(label))
 
             self.update_output_label.emit(f"Processing PSD {label}/{self._selected_roi.getLabelCount()}")
 
@@ -264,7 +270,7 @@ class PancakeWorker(QThread):
         if self._output_filepath == "":
             return
 
-        self._write_to_csv(labels, outputs, lindblad_2005, lewiner_2012)
+        self._write_to_csv(names, outputs, labels, lindblad_2005, lewiner_2012)
 
     def run(self):
         try:
