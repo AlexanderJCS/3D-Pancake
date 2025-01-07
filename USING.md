@@ -82,7 +82,25 @@ This opens a dialog box very similar to the single PSD selection box, and works 
 
 ### Debug Section
 
+This section contains several flags used for debugging purposes. It is not recommended to enable these unless you need much more detail about the steps the 3D Pancake algorithm is taking.
 
+#### Visualize Steps
+
+Visualizes all steps of the 3D Pancake algorithm in a separate window. Enabling this is not recommended for MultiROIs since it opens several windows for each PSD, so processing a large MultiROI dataset with this enabled will cause dozens of windows to open that will manually need to be closed.
+
+Even when running with a single PSD, several windows may show at once. Only the most recently-opened window can be interacted with. To interact with a different window, close all windows until the one you want is the last one remaining.
+
+#### Visualize Final Step
+
+This flag does the same thing as visualize all steps, but only opens the window for the final step. This reduces window clutter that may occur when "Visualize Steps" is checked.
+
+#### Compare to Lewiner 2012
+
+Only changes the output when outputting to a CSV. Adds another column that gives the surface area from the [Lewiner 2012](https://doi.org/10.1080/10867651.2003.10487582) (improved marching cubes) method. Comparing 3D Pancake's surface area to Lewiner 2012's surface area may help  identify PSDs that have a very inaccurate surface area.
+
+#### Compare to Lindblad 2005
+
+Similar to the "Compare to Lewiner 2012" flag, but with the [Lindblad 2005](https://dx.doi.org/10.1016/j.imavis.2004.06.012) method instead. 
 
 ## Analyzing Your First PSD with 3D Pancake
 
