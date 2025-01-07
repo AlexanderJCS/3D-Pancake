@@ -98,3 +98,7 @@ ignore them.
 
 **Step 13:** Open Dragonfly and test that the plugin opens. If it does,
 the installation is complete.
+
+## Next
+
+Next, please read the [usage instructions](USING.md)
