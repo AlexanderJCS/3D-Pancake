@@ -9,9 +9,9 @@ This plugin is made at the Max Planck Florida Institute for Neuroscience (MPFI) 
 
 Please read the [installation instructions](./INSTALLATION.md) for information on how to install the plugin.
 
-## Usage
+## User Guide
 
-Please see the [usage instructions](USING.md).
+Please see the [user guide](USER_GUIDE) to learn how to use this plugin.
 
 ## Run Configurations
 

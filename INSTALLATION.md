@@ -101,4 +101,4 @@ the installation is complete.
 
 ## Next
 
-Next, please read the [usage instructions](USING.md)
+Next, please read the [usage instructions](USER_GUIDE)
