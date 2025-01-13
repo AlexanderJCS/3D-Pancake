@@ -2,8 +2,6 @@
 
 This guide will explain how to use the 3D pancake software plugin.
 
-This guide is written by Alexander Castronovo on Jan 7, 2025 at the Max Planck Florida Institute for Neuroscience.
-
 ## Example: Analyzing a PSD
 
 This section is a guide on how to analyze a single PSD using 3D Pancake. By following along, you will gain a general idea of how to use the plugin.
