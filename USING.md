@@ -2,8 +2,6 @@
 
 This guide will explain how to use the 3D pancake software plugin.
 
-This guide is written by Alexander Castronovo on Jan 7, 2025 at the Max Planck Florida Institute for Neuroscience.
-
 ## Usage Instructions
 
 First, open the Dragonfly session containing data to analyze. This guide already assumes that the postsynaptic densities (PSDs) are segmented as either MultiROIs or single ROIs.

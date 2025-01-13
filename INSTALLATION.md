@@ -1,12 +1,9 @@
 # 3D Pancake Installation Instructions
 
-**Written by Alexander Castronovo** on 9/5/2024 at the Electron
-Microscopy Core, Max Planck Florida Institute for Neuroscience
-
 **The 3D Pancake plugin is designed for Dragonfly version 2024.1.** It
 will not work on earlier versions and may not work on later versions.
 
-If you have any problems with the installation, please contact Alex or create a GitHub issue.
+If you have any problems with the installation, please contact Alex (the project maintainer) or create a GitHub issue.
 
 ## Step-by-step instructions
 

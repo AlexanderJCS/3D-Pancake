@@ -3,8 +3,6 @@ A modified version of the algorithm described in the [Morales et al. 2013](https
 
 This plugin is made at the Max Planck Florida Institute for Neuroscience (MPFI) electron microscopy core.
 
-
-
 ## Installation
 
 Please read the [installation instructions](./INSTALLATION.md) for information on how to install the plugin.
