@@ -6,18 +6,16 @@ This guide is written by Alexander Castronovo on Jan 7, 2025 at the Max Planck F
 
 ## Example: Analyzing a PSD
 
-This section will explain how to analyze a PSD with 3D pancake. More detail on each parameter will be given in the [Configuration](#Configuration) section.
+This section is a guide on how to analyze a single PSD using 3D Pancake. By following along, you will gain a general idea of how to use the plugin.
 
 Before continuing with this section, please have a segmentation of a PSD as a single ROI prepared.
 
-### Basic PSD analysis
-
-#### Open the 3D Pancake user interface
+## Open the 3D Pancake user interface
 In the toolbar, click Plugins -> Start 3D Pancake.
 
 ![Start 3D Pancake](docs_media/usage_image5.png)
 
-#### Select the PSD to analyze
+### Select the PSD to analyze
 In the 3D Pancake interface, select "Select Single PSD". This will open a dialog box to select the PSD to analyze. Simply select the PSD and click OK; the name field is ignored.
 
 ![Select Single PSD](docs_media/usage_image6.png)
@@ -25,13 +23,13 @@ In the 3D Pancake interface, select "Select Single PSD". This will open a dialog
 
 Now, everything needed for PSD processing should be complete. All other parameters are optional, but can be used for more advanced analysis.
 
-#### Run analysis
+### Run analysis
 
 Now, the analysis can be run by clicking the "Process" button. When processing is complete, it will show the PSD surface area under the button. If multiple PSDs are being processed, it will only show a generalized success message.
 
 ![Process Button](docs_media/usage_image7.png)
 
-#### Proofreading the output
+### Proofreading the output
 
 Now that we have the surface area, we need to verify that the surface area measurement is accurate. 3D Pancake works by creating a mesh that closely follows the morphology of the PSD. This mesh can be viewed in Dragonfly to verify that the surface area is accurate.
 
@@ -45,7 +43,7 @@ Now, you should see a mesh that follows the PSD segmentation, like this:
 
 For this section, the correctness (how closely the mesh follows the PSD morphology) of the mesh does not matter. For real analysis, the [cs parameter](#cs-blur-constant) or the [Vertex Deletion Threshold](#Vertex-Deletion-Threshold) may need to be adjusted to get a more accurate mesh.
 
-#### Save the output
+### Save the output
 
 3D Pancake offers a convenient method to save the output of the analysis in a CSV file. To do this, enter the desired filename in the "CSV File Name" field. Then click the "Select Output Folder" button to select the output folder (I am using my desktop).
 
@@ -59,7 +57,7 @@ If there was a previous file at that location, it will be overwritten. If the pr
 
 ![Output CSV](docs_media/usage_image10.png)
 
-#### Conclusion
+### Conclusion
 
 This concludes the basic analysis of a PSD with 3D Pancake. The surface area of the PSD has been calculated, and the output has been saved to a CSV file. The mesh output has been viewed in Dragonfly to verify the accuracy of the surface area measurement.
 
