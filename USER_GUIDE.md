@@ -41,7 +41,7 @@ Now, you should see a mesh that follows the PSD segmentation, like this:
 
 ![Output Mesh](docs_media/usage_image8.png)
 
-For this section, the correctness (how closely the mesh follows the PSD morphology) of the mesh does not matter. For real analysis, the [cs parameter](#cs-blur-constant) or the [Vertex Deletion Threshold](#Vertex-Deletion-Threshold) may need to be adjusted to get a more accurate mesh.
+For this section, the correctness (how closely the mesh follows the PSD morphology) of the mesh does not matter. For real analysis, the [cs parameter](#cs-blur-constant) or the [vertex deletion threshold](#Vertex-Deletion-Threshold) may need to be adjusted to get a more accurate mesh.
 
 ### Save the output
 
