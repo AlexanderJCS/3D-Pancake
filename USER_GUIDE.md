@@ -2,22 +2,72 @@
 
 This guide will explain how to use the 3D pancake software plugin.
 
-## Usage Instructions
+This guide is written by Alexander Castronovo on Jan 7, 2025 at the Max Planck Florida Institute for Neuroscience.
 
-First, open the Dragonfly session containing data to analyze. This guide already assumes that the postsynaptic densities (PSDs) are segmented as either MultiROIs or single ROIs.
+## Example: Analyzing a PSD
 
-## Opening the Plugin UI
+This section is a guide on how to analyze a single PSD using 3D Pancake. By following along, you will gain a general idea of how to use the plugin.
 
-To open the plugin, go to Plugins -> Start 3D Pancake in the Dragonfly toolbar. Don't worry if you see the other plugin options; they are not used in this tutorial.
+Before continuing with this section, please have a segmentation of a PSD as a single ROI prepared.
 
-![](docs_media/usage_image1.png)
+## Open the 3D Pancake user interface
+In the toolbar, click Plugins -> Start 3D Pancake.
 
-Then, you should see this window appear:
-![](docs_media/usage_image2.png)
+![Start 3D Pancake](docs_media/usage_image5.png)
+
+### Select the PSD to analyze
+In the 3D Pancake interface, select "Select Single PSD". This will open a dialog box to select the PSD to analyze. Simply select the PSD and click OK; the name field is ignored.
+
+![Select Single PSD](docs_media/usage_image6.png)
+![Select Single PSD](docs_media/usage_image4.png)
+
+Now, everything needed for PSD processing should be complete. All other parameters are optional, but can be used for more advanced analysis.
+
+### Run analysis
+
+Now, the analysis can be run by clicking the "Process" button. When processing is complete, it will show the PSD surface area under the button. If multiple PSDs are being processed, it will only show a generalized success message.
+
+![Process Button](docs_media/usage_image7.png)
+
+### Proofreading the output
+
+Now that we have the surface area, we need to verify that the surface area measurement is accurate. 3D Pancake works by creating a mesh that closely follows the morphology of the PSD. This mesh can be viewed in Dragonfly to verify that the surface area is accurate.
+
+To enable the mesh output, click the "Generate a Dragonfly Mesh" checkbox under the "Output" section.
+
+Then, click the "Process" button. Everything should look the same, but now there should be a new Dragonfly object in the object list in the top right of the screen. This object will be named `3D Pancake Output Mesh: ` followed by the name of the PSD. Click on the eye to view the mesh in 2D.
+
+Now, you should see a mesh that follows the PSD segmentation, like this:
+
+![Output Mesh](docs_media/usage_image8.png)
+
+For this section, the correctness (how closely the mesh follows the PSD morphology) of the mesh does not matter. For real analysis, the [cs parameter](#cs-blur-constant) or the [vertex deletion threshold](#Vertex-Deletion-Threshold) may need to be adjusted to get a more accurate mesh.
+
+### Save the output
+
+3D Pancake offers a convenient method to save the output of the analysis in a CSV file. To do this, enter the desired filename in the "CSV File Name" field. Then click the "Select Output Folder" button to select the output folder (I am using my desktop).
+
+Before clicking the "Process" button, uncheck "Generate a Dragonfly Mesh" from the prior step to avoid creating two meshes.
+
+Finally, click the "Process" button to run the analysis. When the analysis is complete, a CSV file will be saved to the specified location.
+
+If there was a previous file at that location, it will be overwritten. If the previous file is open, 3D Pancake will not be able to overwrite it.
+
+![Save to CSV configuration](docs_media/usage_image9.png)
+
+![Output CSV](docs_media/usage_image10.png)
+
+### Conclusion
+
+This concludes the basic analysis of a PSD with 3D Pancake. The surface area of the PSD has been calculated, and the output has been saved to a CSV file. The mesh output has been viewed in Dragonfly to verify the accuracy of the surface area measurement.
+
+Any parameter in the user interface is explained in more detail in the [Configuration](#Configuration) section. For a deeper understanding on how to use 3D Pancake, it is recommended to read the section.
+
+The same analysis that was done here with one PSD can be done with multiple PSDs by using the "Select Multiple PSDs" button instead of "Select Single PSD" in the 3D Pancake user interface.
 
 ## Configuration
 
-This section will explain the configuration options shown in the 3D Pancake user interface. The information from this section will be used to run analysis of your first PSD in the next section of this tutorial. 
+This section will explain all the configuration options shown in the 3D Pancake user interface in detail, how they affect the output, and when they should be adjusted.
 
 ### Parameters Section
 
@@ -38,11 +88,11 @@ By default, the vertex deletion threshold value is half the z-layer thickness of
 For simple PSDs, this parameter usually does not need to be adjusted.
 
 The threshold should be set higher if:
-* Perforations in the mesh are appearing that likely do not actually exist (e.g. in between z-slices)
+* Perforations in the mesh are appearing that likely do not actually exist (e.g. in between z-slices).
 
 The threshold should be set lower if:
-* Medium-sized and large perforations in the PSD are filled in by the mesh
-* The mesh is going over the edge of the segmentation too much
+* Medium-sized and large perforations in the PSD are filled in by the mesh.
+* The mesh is going over the edge of the segmentation too much.
 
 It is recommended to verify these issues in 2D and 3D, the 2D visualization of a mesh is sometimes misleading.
 
@@ -99,7 +149,3 @@ Only changes the output when outputting to a CSV. Adds another column that gives
 #### Compare to Lindblad 2005
 
 Similar to the "Compare to Lewiner 2012" flag, but with the [Lindblad 2005](https://dx.doi.org/10.1016/j.imavis.2004.06.012) method instead. 
-
-## Analyzing Your First PSD with 3D Pancake
-
-## Analyzing Your First PSD MultiROI (bulk analysis) with 3D Pancake
