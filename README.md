@@ -12,7 +12,7 @@ Please read the [installation instructions](./INSTALLATION.md) for information o
 
 ## User Guide
 
-Please see the [user guide](USER_GUIDE) to learn how to use this plugin.
+Please see the [user guide](USER_GUIDE.md) to learn how to use this plugin.
 
 ## Run Configurations
 
