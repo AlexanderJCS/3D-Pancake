@@ -1,7 +1,10 @@
 # 3D-Pancake
-A modified version of the algorithm described in the [Morales et al. 2013](https://doi.org/10.3389/fnana.2013.00020 ) paper, made as a plugin for the [Dragonfly 3D World software](https://dragonfly.comet.tech/en/product-overview/dragonfly-3d-world). It generates a planar mesh that closely follows the morphology of the postsynaptic density (PSD).
 
-This plugin is made at the Max Planck Florida Institute for Neuroscience (MPFI) electron microscopy core.
+3D Pancake is a modified version of the algorithm described in the [Morales et al. 2013](https://doi.org/10.3389/fnana.2013.00020) paper. In short, it generates a 2-manifold mesh (i.e., a mesh that is three-dimensional but has no volume) that closely follows the morphology of the postsynaptic density (PSD). The mesh's surface area is then calculated to give an accurate measurement of the PSD's surface area.
+
+We are interested in the 2-manifold surface area of the PSD since it is a good proxy of the PSD's surface area in apposition to the presynaptic active zone, which has been previously correlated to synaptic strength.
+
+The main motivation for the 3D Pancake algorithm is to provide a more accurate and consistent method for calculating the PSD surface area for SBF-SEM datasets. According to our testing, prior voxel-to-mesh or voxel-to-surface-area algorithms are inaccurate. The [Morales et al. 2013](https://doi.org/10.3389/fnana.2013.00020) algorithm fails to accurately calculate PSD surface area for SBF-SEM datasets, since it was designed for FIB-SEM (which has a higher z-resolution). The 3D Pancake algorithm modifies the Morales et al. 2013 method to work better with SBF-SEM datasets. In addition, it is implemented as a plugin for the [Dragonfly 3D World software](https://dragonfly.comet.tech/en/product-overview/dragonfly-3d-world), a more widely-used software for analyzing large 3D datasets.
 
 ## Installation
 
