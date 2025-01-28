@@ -344,7 +344,7 @@ def main():
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/test/areas.csv"), "r") as f:
         ground_truths = list(csv.DictReader(f))
 
-    alg_output = algorithm_output(c_s=0.2, dist_threshold=80, verbose=True)
+    alg_output = algorithm_output(c_s=0.2, verbose=True)
     alg_output_sum, ground_truth_sum, abs_diff, sum_time, table_rows = summary_stats(alg_output, ground_truths, "amira")
 
     table_header = ["File", "Algorithm Area", "Actual Area", "Difference", "% Difference", "Time Taken"]
