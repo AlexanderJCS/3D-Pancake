@@ -8,6 +8,13 @@ This section is a guide on how to analyze a single PSD using 3D Pancake. By foll
 
 Before continuing with this section, please have a segmentation of a PSD as a single ROI prepared.
 
+This guide will do the following, which encompasses most of the workflow for 3D Pancake:
+1. Open Dragonfly and the 3D Pancake user interface.
+2. Select the PSD to analyze.
+3. Run a minimal analysis.
+4. Proofread the output.
+5. Save the output to a CSV file.
+
 ## Open the 3D Pancake user interface
 In the toolbar, click Plugins -> Start 3D Pancake.
 
@@ -41,6 +48,8 @@ Now, you should see a mesh that follows the PSD segmentation, like this:
 
 For this section, the correctness (how closely the mesh follows the PSD morphology) of the mesh does not matter. For real analysis, the [cs parameter](#cs-blur-constant) or the [vertex deletion threshold](#Vertex-Deletion-Threshold) may need to be adjusted to get a more accurate mesh.
 
+> **Tip:** For more detailed analysis, it may also be helpful to enable the [Visualize Final Step](#Visualize-Final-Step) flag in the "Debug" section to visualize the voxel dataset (as a point cloud) and the mesh in another viewer. It is recommended to only enable this checkbox when analyzing one or two PSDs at a time to limit the number of windows that open.
+
 ### Save the output
 
 3D Pancake offers a convenient method to save the output of the analysis in a CSV file. To do this, enter the desired filename in the "CSV File Name" field. Then click the "Select Output Folder" button to select the output folder (I am using my desktop).
@@ -65,7 +74,7 @@ The same analysis that was done here with one PSD can be done with multiple PSDs
 
 ## Configuration
 
-This section will explain all the configuration options shown in the 3D Pancake user interface in detail, how they affect the output, and when they should be adjusted.
+This section will explain all the configuration options shown in the 3D Pancake user interface in detail, how they affect the output, and when they should be adjusted. This section is mostly designed as a reference for users who are already familiar with the plugin or want to gain a deeper understanding.
 
 ### Parameters Section
 
