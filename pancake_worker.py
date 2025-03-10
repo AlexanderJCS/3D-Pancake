@@ -28,23 +28,15 @@ def get_cropped_roi_arr(roi: ors.ROI, scale: data.Scale) -> tuple[np.ndarray, np
     
     logger.info("Getting cropped ROI array")
 
-    roi_arr = roi.getAsNDArray()
-
-    if roi_arr.shape == (0,):
-        return roi_arr
-
     min_indices = roi.getLocalBoundingBoxMin(0)
-    min_indices = np.array([min_indices.getX(), min_indices.getY(), min_indices.getZ()], dtype=int)[::-1]
+    min_indices = np.array([min_indices.getX(), min_indices.getY(), min_indices.getZ()], dtype=int)
     max_indices = roi.getLocalBoundingBoxMax(0)
-    max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)[::-1]
+    max_indices = np.array([max_indices.getX(), max_indices.getY(), max_indices.getZ()], dtype=int)
 
-    cropped = roi_arr[
-        min_indices[0]:max_indices[0] + 1,
-        min_indices[1]:max_indices[1] + 1,
-        min_indices[2]:max_indices[2] + 1
-    ]
+    cropped_roi = roi.getSubset(*min_indices, 0, *max_indices, 0, None, None)
+    cropped = cropped_roi.getAsNDArray()
     
-    reverse_transformation = (-1 * min_indices[::-1] * scale.xyz())
+    reverse_transformation = (-1 * min_indices * scale.xyz())
     
     logger.debug(f"Cropped to shape {cropped[0].shape} with reverse transformation {reverse_transformation}")
     
